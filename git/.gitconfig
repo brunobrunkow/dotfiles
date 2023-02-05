@@ -1,3 +1,5 @@
 [user]
 	name = Bruno Brunkow
 	email = self@brunobrunkow.de
+[core]
+	excludesfile = /Users/brunobrunkow/.gitignore_global
