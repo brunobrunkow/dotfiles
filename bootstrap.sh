@@ -6,11 +6,14 @@ xcode-select --install
 # Homebrew 🍺
 zsh brew/brew.sh
 
-# zsh
+# ZSH
 zsh zsh/zsh.sh
 
-# git
+# GIT
 zsh git/git.sh
 
-# iterm
+# iTerm2
 zsh iterm2/iterm.sh
+
+# Better Touch Tool
+zsh btt/btt.sh
