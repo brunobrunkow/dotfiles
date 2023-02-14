@@ -3,6 +3,9 @@
 # Xcode command line tools
 xcode-select --install
 
+# OSX preferences
+zsh osx/osx.sh
+
 # Homebrew 🍺
 zsh brew/brew.sh
 
