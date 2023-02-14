@@ -4,19 +4,19 @@
 xcode-select --install
 
 # OSX preferences
-zsh osx/osx.sh
+sh osx/osx.sh
 
 # Homebrew 🍺
-zsh brew/brew.sh
+sh brew/brew.sh
 
 # ZSH
-zsh zsh/zsh.sh
+sh zsh/zsh.sh
 
 # GIT
-zsh git/git.sh
+sh git/git.sh
 
 # iTerm2
-zsh iterm2/iterm.sh
+sh iterm2/iterm.sh
 
 # Better Touch Tool
-zsh btt/btt.sh
+sh btt/btt.sh
