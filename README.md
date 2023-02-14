@@ -34,5 +34,5 @@ Setup
 
 # Manual Steps
 
-* Create ssh key called `id_git` and add the public key to github.
-* 
+* Create ssh key called `id_git` and add the public key to github/gitlab.
+* Install Xcode once Xcodes.app is installed.
