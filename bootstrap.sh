@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/zsh
 
 # Xcode command line tools
 xcode-select --install
