@@ -31,3 +31,8 @@ Setup
 * git configuration
 * zsh theming
 * iTerm2
+
+# Manual Steps
+
+* Create ssh key called `id_git` and add the public key to github.
+* 
