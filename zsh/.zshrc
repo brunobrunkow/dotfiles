@@ -112,3 +112,18 @@ source $ZSH/oh-my-zsh.sh
 
 # Add id to ssh agent
 ssh-add ~/.ssh/id_git
+
+export PATH="/opt/homebrew/opt/postgresql@13/bin:$PATH"
+
+export API_SECRET_KEY=""
+export ARCHIVE_POSTS_COUNT="5000"
+export ENABLE_SSL="false"
+export INITIAL_LOAD_POST_COUNT="500"
+export DB_USER="brunobrunkow"
+export DB_PASSWORD="password"
+
+# aliases 
+
+alias ga='git add .'
+alias gc='git commit -m'
+alias gp='git push'
