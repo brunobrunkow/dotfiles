@@ -42,19 +42,10 @@ fi
 # Create or update SSH config
 if [ ! -f "$SSH_CONFIG_PATH" ]; then
     cat > "$SSH_CONFIG_PATH" << 'EOF'
-# GitHub
-Host github.com
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/id_git
+Host *
     AddKeysToAgent yes
-
-# GitLab
-Host gitlab.com
-    HostName gitlab.com
-    User git
+    UseKeychain yes
     IdentityFile ~/.ssh/id_git
-    AddKeysToAgent yes
 EOF
     chmod 600 "$SSH_CONFIG_PATH"
     echo "✓ Created SSH config at $SSH_CONFIG_PATH"

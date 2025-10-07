@@ -17,13 +17,6 @@ source $ZSH/oh-my-zsh.sh
 # Powerlevel10k configuration
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Auto-load SSH key to agent on new shell sessions
-if [ -f ~/.ssh/id_git ]; then
-  if ! ssh-add -l 2>/dev/null | grep -q ~/.ssh/id_git; then
-    ssh-add -q ~/.ssh/id_git 2>/dev/null
-  fi
-fi
-
 # Environment variables
 export API_SECRET_KEY=""
 export ARCHIVE_POSTS_COUNT="5000"
