@@ -6,7 +6,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -110,8 +110,10 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Add id to ssh agent
-ssh-add ~/.ssh/id_git
+# Add id to ssh agent (only if file exists and not already added)
+if [ -f ~/.ssh/id_git ] && ! ssh-add -l | grep -q ~/.ssh/id_git 2>/dev/null; then
+  ssh-add -q ~/.ssh/id_git 2>/dev/null
+fi
 
 export PATH="/opt/homebrew/opt/postgresql@13/bin:$PATH"
 
@@ -127,3 +129,5 @@ export DB_PASSWORD="password"
 alias ga='git add .'
 alias gc='git commit -m'
 alias gp='git push'
+alias gameon='sudo $HOME/Developer/Skripts/gameon.sh'
+alias gameoff='sudo ifconfig awdl0 up'
