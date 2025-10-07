@@ -48,7 +48,7 @@ The following applications are installed via Homebrew:
 **Applications:**
 * Alfred
 * BetterTouchTool
-* eul
+* Stats
 * Firefox
 * Ghostty
 * Proxyman

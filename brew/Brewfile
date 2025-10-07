@@ -4,7 +4,7 @@ brew "zsh"
 # Essentials
 cask "alfred"
 cask "bettertouchtool"
-cask "eul"
+cask "stats"
 cask "firefox"
 cask "ghostty"
 cask "proxyman"
