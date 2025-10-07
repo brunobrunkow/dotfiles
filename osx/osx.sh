@@ -1,6 +1,19 @@
-source './osx/utils.sh'
+#!/bin/sh
 
-# Setting up my OS X preferences
+set -e  # Exit on error
+set -u  # Exit on undefined variable
+
+DOTFILES_DIR="$HOME/Developer/dotfiles"
+
+# Source utilities
+if [ -f "$DOTFILES_DIR/osx/utils.sh" ]; then
+    source "$DOTFILES_DIR/osx/utils.sh"
+else
+    echo "✗ utils.sh not found" >&2
+    exit 1
+fi
+
+echo "Setting up macOS preferences..."
 
 # Scroll direction natural : False
 defaults write -g com.apple.swipescrolldirection -bool false
@@ -24,20 +37,12 @@ defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 print_success "Tap to click enabled at the trackpad"
 
-
 # Automatically quit printer app once the print jobs complete
 defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 print_success "Printer app quit once the prints complete."
 
-
-# Disable the “Are you sure you want to open this application?” dialog
+# Disable the "Are you sure you want to open this application?" dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
 print_success "Are you sure you want to open this app dialog disabled."
 
-print_in_green() {
-    printf "\e[0;32m$1\e[0m"
-}
-
-print_success() {
-    print_in_green "  [✔] $1\n"
-}
+echo "macOS preferences setup complete!"

@@ -1,0 +1,117 @@
+# Ghostty Configuration File
+# Save this to: ~/.config/ghostty/config (Linux/macOS XDG)
+# or: ~/Library/Application Support/com.mitchellh.ghostty/config (macOS)
+
+# ============================================================================
+# THEME & COLORS
+# ============================================================================
+# Using Breeze theme
+theme = Breeze
+
+# ============================================================================
+# FONT SETTINGS
+# ============================================================================
+# Using MesloLGS NF - recommended for Powerlevel10k
+font-family = MesloLGS NF
+font-size = 13
+# Ligatures enabled by default for better code readability
+
+# ============================================================================
+# WINDOW APPEARANCE
+# ============================================================================
+# No window padding - text closer to edges
+window-padding-x = 0
+window-padding-y = 0
+
+# Window decorations enabled to support native tabs on macOS
+window-decoration = true
+
+# Modern look with transparency and blur
+background-opacity = 0.95
+background-blur-radius = 20
+
+# ============================================================================
+# CURSOR & SELECTION
+# ============================================================================
+# Bar cursor style
+# cursor-style = bar
+
+# Blinking cursor
+cursor-style-blink = true
+
+# Manual copy (no auto-copy on select)
+copy-on-select = false
+
+# Clean up trailing spaces when copying
+clipboard-trim-trailing-spaces = true
+
+# ============================================================================
+# PERFORMANCE & BEHAVIOR
+# ============================================================================
+# Sync rendering with screen refresh for smoother display
+window-vsync = true
+
+# Better emoji and unicode character handling
+grapheme-width-method = unicode
+
+# Enable shell integration for advanced features
+shell-integration = detect
+
+# Hide mouse when typing
+mouse-hide-while-typing = true
+
+# Automatically focus pane on mouse hover (useful for splits)
+focus-follows-mouse = true
+
+# No confirmation before closing
+confirm-close-surface = false
+
+# ============================================================================
+# WORKING DIRECTORY
+# ============================================================================
+# New windows/tabs inherit working directory
+window-inherit-working-directory = true
+window-inherit-font-size = true
+
+# ============================================================================
+# KEYBINDINGS
+# ============================================================================
+# Toggle quick terminal with cmd+space (macOS) or ctrl+space (Linux)
+# Note: On macOS, you may need to disable Spotlight's cmd+space shortcut
+# in System Settings > Keyboard > Keyboard Shortcuts > Spotlight
+
+# Quick terminal toggle
+keybind = super+space=toggle_quick_terminal
+
+# Common keybindings (optional, these are mostly defaults)
+# New tab: cmd+t / ctrl+shift+t
+# New window: cmd+n / ctrl+shift+n
+# New split right: cmd+d / ctrl+shift+d
+# New split down: cmd+shift+d / ctrl+shift+alt+d
+# Close surface: cmd+w / ctrl+shift+w
+# Reload config: cmd+shift+comma / ctrl+shift+comma
+
+# ============================================================================
+# ADDITIONAL SETTINGS
+# ============================================================================
+# Remember window positions and sizes across restarts
+window-save-state = always
+
+# Check for updates automatically
+auto-update = check
+
+# Adjust these if needed:
+
+# Scrollback buffer (lines to keep in history)
+# scrollback-limit = 10000
+
+# Font features (uncomment to disable ligatures)
+# font-feature = -liga
+# font-feature = -calt
+
+# Window title customization
+# title = Ghostty
+
+# Initial window size (in cells: columns x rows)
+# window-width = 110
+# window-height = 30

@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Alrra utils.sh (https://github.com/alrra/dotfiles/blob/master/os/utils.sh) from his dotfiles repo
 # I added extra functions
 
