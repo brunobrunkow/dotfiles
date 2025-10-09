@@ -61,6 +61,32 @@ else
     fi
 fi
 
+FAST_SYNTAX_HIGHLIGHTING_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting"
+if [ -d "$FAST_SYNTAX_HIGHLIGHTING_DIR" ]; then
+    echo "  ⚠️  fast-syntax-highlighting already installed, skipping..."
+else
+    echo "  🔌 Installing fast-syntax-highlighting plugin..."
+    if git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git "$FAST_SYNTAX_HIGHLIGHTING_DIR"; then
+        echo "  ✅ fast-syntax-highlighting installed"
+    else
+        echo "  ❌ Failed to install fast-syntax-highlighting" >&2
+        exit 1
+    fi
+fi
+
+ZSH_AUTOCOMPLETE_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete"
+if [ -d "$ZSH_AUTOCOMPLETE_DIR" ]; then
+    echo "  ⚠️  zsh-autocomplete already installed, skipping..."
+else
+    echo "  🔌 Installing zsh-autocomplete plugin..."
+    if git clone https://github.com/marlonrichert/zsh-autocomplete.git "$ZSH_AUTOCOMPLETE_DIR"; then
+        echo "  ✅ zsh-autocomplete installed"
+    else
+        echo "  ❌ Failed to install zsh-autocomplete" >&2
+        exit 1
+    fi
+fi
+
 # create symbolic links
 if ln -sf "$DOTFILES_DIR/zsh/.zshrc" ~/.zshrc; then
     echo "  ✅ Created symlink for .zshrc"
