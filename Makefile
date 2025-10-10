@@ -22,7 +22,7 @@ update:
 	@sh git/git.sh
 	@sh zsh/zsh.sh
 	@sh ghostty/ghostty.sh
-	@sh btt/btt.sh
+	@sh hammerspoon/hammerspoon.sh
 	@echo "✅ Symlinks updated!\n"
 
 backup:
@@ -43,5 +43,5 @@ clean:
 	@rm -f ~/.p10k.zsh && echo "  ✅ Removed ~/.p10k.zsh" || true
 	@rm -f ~/.gitconfig && echo "  ✅ Removed ~/.gitconfig" || true
 	@rm -f ~/.gitignore_global && echo "  ✅ Removed ~/.gitignore_global" || true
-	@rm -f ~/.btt_autoload_preset.bttpreset && echo "  ✅ Removed ~/.btt_autoload_preset.bttpreset" || true
+	@rm -rf ~/.hammerspoon && echo "  ✅ Removed ~/.hammerspoon" || true
 	@echo "✅ All symlinks removed!\n"

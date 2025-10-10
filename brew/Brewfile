@@ -3,7 +3,7 @@ tap "homebrew/bundle"
 brew "zsh"
 # Essentials
 cask "alfred"
-cask "bettertouchtool"
+cask "hammerspoon"
 cask "stats"
 cask "firefox"
 cask "ghostty"

@@ -3,15 +3,9 @@
 set -e  # Exit on error
 set -u  # Exit on undefined variable
 
-DOTFILES_DIR="$HOME/Developer/dotfiles"
-
-# Source utilities
-if [ -f "$DOTFILES_DIR/osx/utils.sh" ]; then
-    source "$DOTFILES_DIR/osx/utils.sh"
-else
-    echo "✗ utils.sh not found" >&2
-    exit 1
-fi
+print_success() {
+    printf "\e[0;32m  [✔] $1\n\e[0m"
+}
 
 echo "Setting up macOS preferences..."
 

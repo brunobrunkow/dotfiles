@@ -92,12 +92,12 @@ else
     exit 1
 fi
 
-# Better Touch Tool
-echo "✨ [8/8] Setting up BetterTouchTool..."
-if sh btt/btt.sh; then
-    echo "✅ BetterTouchTool setup complete\n"
+# Hammerspoon
+echo "🔨 [8/8] Setting up Hammerspoon..."
+if sh hammerspoon/hammerspoon.sh; then
+    echo "✅ Hammerspoon setup complete\n"
 else
-    echo "❌ Failed to setup BetterTouchTool" >&2
+    echo "❌ Failed to setup Hammerspoon" >&2
     exit 1
 fi
 

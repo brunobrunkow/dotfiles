@@ -80,7 +80,7 @@ window-inherit-font-size = true
 # in System Settings > Keyboard > Keyboard Shortcuts > Spotlight
 
 # Quick terminal toggle
-keybind = super+space=toggle_quick_terminal
+# keybind = super+space=toggle_quick_terminal
 
 # Common keybindings (optional, these are mostly defaults)
 # New tab: cmd+t / ctrl+shift+t
