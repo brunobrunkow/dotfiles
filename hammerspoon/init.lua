@@ -67,6 +67,12 @@ mediaControls.bindMouseButtons()
 
 -- Add any additional custom hotkeys below
 
+-- Sleep system
+-- Ctrl+Option+Cmd+B: Put the Mac to sleep
+hs.hotkey.bind({"ctrl", "alt", "cmd"}, "B", function()
+    hs.caffeinate.systemSleep()
+end)
+
 -- Reload Hammerspoon config
 -- Cmd+Option+Shift+R: Reload configuration
 hs.hotkey.bind({"cmd", "alt", "shift"}, "R", function()

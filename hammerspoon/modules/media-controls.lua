@@ -6,27 +6,16 @@
 
 local M = {}
 
--- Volume adjustment step (percentage)
-local VOLUME_STEP = 5
-
---- Increases system volume by the defined step
+--- Increases system volume using native macOS volume control
 function M.volumeUp()
-    local device = hs.audiodevice.defaultOutputDevice()
-    if device then
-        local currentVolume = device:outputVolume()
-        local newVolume = math.min(currentVolume + VOLUME_STEP, 100)
-        device:setOutputVolume(newVolume)
-    end
+    hs.eventtap.event.newSystemKeyEvent("SOUND_UP", true):post()
+    hs.eventtap.event.newSystemKeyEvent("SOUND_UP", false):post()
 end
 
---- Decreases system volume by the defined step
+--- Decreases system volume using native macOS volume control
 function M.volumeDown()
-    local device = hs.audiodevice.defaultOutputDevice()
-    if device then
-        local currentVolume = device:outputVolume()
-        local newVolume = math.max(currentVolume - VOLUME_STEP, 0)
-        device:setOutputVolume(newVolume)
-    end
+    hs.eventtap.event.newSystemKeyEvent("SOUND_DOWN", true):post()
+    hs.eventtap.event.newSystemKeyEvent("SOUND_DOWN", false):post()
 end
 
 --- Binds mouse button 4 and 5 to volume controls
@@ -34,26 +23,26 @@ end
 -- Mouse button 5: Volume down
 function M.bindMouseButtons()
     -- Create an eventtap to watch for mouse button events
-    local mouseButtonTap = hs.eventtap.new({hs.eventtap.event.types.otherMouseDown}, function(event)
+    M.mouseButtonTap = hs.eventtap.new({hs.eventtap.event.types.otherMouseDown}, function(event)
         local buttonNumber = event:getProperty(hs.eventtap.event.properties.mouseEventButtonNumber)
 
-        -- Mouse button 4 (typically back/left side button) = volume up
+        -- Mouse button 4 (typically back/left side button) = volume down
         if buttonNumber == 3 then  -- Button 4 is index 3 (0-indexed)
-            M.volumeUp()
+            M.volumeDown()
             return true  -- Consume the event
         end
 
-        -- Mouse button 5 (typically forward/right side button) = volume down
+        -- Mouse button 5 (typically forward/right side button) = volume up
         if buttonNumber == 4 then  -- Button 5 is index 4 (0-indexed)
-            M.volumeDown()
+            M.volumeUp()
             return true  -- Consume the event
         end
 
         return false  -- Pass through other mouse buttons
     end)
 
-    mouseButtonTap:start()
-    return mouseButtonTap
+    M.mouseButtonTap:start()
+    return M.mouseButtonTap
 end
 
 return M
