@@ -25,13 +25,31 @@ Toggle applications with a single hotkey. If the app isn't running, it launches.
 
 ### Window Management
 
-Quickly position and resize windows using arrow keys.
+Quickly position and resize windows using keyboard shortcuts.
 
 **Window positioning hotkeys:**
 - `Cmd+Option+Left Arrow` - Move window to left half of screen
 - `Cmd+Option+Right Arrow` - Move window to right half of screen
 - `Cmd+Option+Up Arrow` - Maximize window to full screen
 - `Cmd+Option+Down Arrow` - Center window on screen (70% of screen size)
+
+**Quarter-screen positioning hotkeys:**
+- `Cmd+Option+U` - Move window to top-left quarter
+- `Cmd+Option+I` - Move window to top-right quarter
+- `Cmd+Option+N` - Move window to bottom-left quarter
+- `Cmd+Option+M` - Move window to bottom-right quarter
+
+**Vim-style window focus navigation:**
+- `Cmd+Option+K` - Focus window to the left
+- `Cmd+Option+O` - Focus window above
+- `Cmd+Option+L` - Focus window below
+- `Cmd+Option+Ö` - Focus window to the right
+
+**Window swapping:**
+- `Cmd+Option+Shift+K` - Swap focused window with left neighbor
+- `Cmd+Option+Shift+O` - Swap focused window with above neighbor
+- `Cmd+Option+Shift+L` - Swap focused window with below neighbor
+- `Cmd+Option+Shift+Ö` - Swap focused window with right neighbor
 
 **Multi-display hotkeys:**
 - `Cmd+Option+Ctrl+Left Arrow` - Move window to left display
@@ -112,16 +130,31 @@ appToggle.bindToggle({"cmd", "shift"}, "b", "Safari")
 
 ### window-management.lua
 
-Provides window positioning and resizing functionality.
+Provides window positioning, resizing, and focus navigation functionality.
 
 **Functions:**
 - `moveToLeft()` - Moves focused window to left half of screen
 - `moveToRight()` - Moves focused window to right half of screen
 - `maximize()` - Maximizes focused window to full screen
 - `center()` - Centers focused window at 70% screen size
+- `moveToTopLeft()` - Moves focused window to top-left quarter of screen
+- `moveToTopRight()` - Moves focused window to top-right quarter of screen
+- `moveToBottomLeft()` - Moves focused window to bottom-left quarter of screen
+- `moveToBottomRight()` - Moves focused window to bottom-right quarter of screen
+- `focusWindowLeft()` - Focuses the window to the left
+- `focusWindowDown()` - Focuses the window below
+- `focusWindowUp()` - Focuses the window above
+- `focusWindowRight()` - Focuses the window to the right
+- `swapWindowLeft()` - Swaps focused window with left neighbor
+- `swapWindowDown()` - Swaps focused window with below neighbor
+- `swapWindowUp()` - Swaps focused window with above neighbor
+- `swapWindowRight()` - Swaps focused window with right neighbor
 - `moveToLeftDisplay()` - Moves focused window to the display on the left (west)
 - `moveToRightDisplay()` - Moves focused window to the display on the right (east)
 - `bindHotkeys(modifiers)` - Binds all window management functions to arrow keys
+- `bindQuarterScreenHotkeys(modifiers)` - Binds quarter-screen positioning to U/I/N/M keys
+- `bindVimFocusHotkeys(modifiers)` - Binds Vim-style focus navigation to K/O/L/Ö keys
+- `bindWindowSwapHotkeys(modifiers)` - Binds window swapping to K/O/L/Ö keys
 - `bindMultiDisplayHotkeys(modifiers)` - Binds multi-display functions to arrow keys
 
 **Example:**
@@ -132,12 +165,24 @@ local windowMgmt = require("modules.window-management")
 -- Bind all hotkeys with Cmd+Option
 windowMgmt.bindHotkeys({"cmd", "alt"})
 
+-- Bind quarter-screen hotkeys with Cmd+Option
+windowMgmt.bindQuarterScreenHotkeys({"cmd", "alt"})
+
+-- Bind Vim-style focus navigation with Cmd+Option (K/O/L/Ö)
+windowMgmt.bindVimFocusHotkeys({"cmd", "alt"})
+
+-- Bind window swapping with Cmd+Option+Shift (K/O/L/Ö)
+windowMgmt.bindWindowSwapHotkeys({"cmd", "alt", "shift"})
+
 -- Bind multi-display hotkeys with Cmd+Option+Ctrl
 windowMgmt.bindMultiDisplayHotkeys({"cmd", "alt", "ctrl"})
 
 -- Or call individual functions
 windowMgmt.moveToLeft()
 windowMgmt.maximize()
+windowMgmt.moveToTopLeft()
+windowMgmt.focusWindowRight()
+windowMgmt.swapWindowLeft()
 windowMgmt.moveToLeftDisplay()
 ```
 

@@ -76,6 +76,70 @@ function M.center()
     })
 end
 
+--- Moves and resizes a window to occupy the top-left quarter of the screen
+function M.moveToTopLeft()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local screen = win:screen()
+    local frame = screen:frame()
+
+    win:setFrame({
+        x = frame.x,
+        y = frame.y,
+        w = frame.w / 2,
+        h = frame.h / 2
+    })
+end
+
+--- Moves and resizes a window to occupy the top-right quarter of the screen
+function M.moveToTopRight()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local screen = win:screen()
+    local frame = screen:frame()
+
+    win:setFrame({
+        x = frame.x + (frame.w / 2),
+        y = frame.y,
+        w = frame.w / 2,
+        h = frame.h / 2
+    })
+end
+
+--- Moves and resizes a window to occupy the bottom-left quarter of the screen
+function M.moveToBottomLeft()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local screen = win:screen()
+    local frame = screen:frame()
+
+    win:setFrame({
+        x = frame.x,
+        y = frame.y + (frame.h / 2),
+        w = frame.w / 2,
+        h = frame.h / 2
+    })
+end
+
+--- Moves and resizes a window to occupy the bottom-right quarter of the screen
+function M.moveToBottomRight()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local screen = win:screen()
+    local frame = screen:frame()
+
+    win:setFrame({
+        x = frame.x + (frame.w / 2),
+        y = frame.y + (frame.h / 2),
+        w = frame.w / 2,
+        h = frame.h / 2
+    })
+end
+
 --- Moves window to the display on the left (west)
 function M.moveToLeftDisplay()
     local win = getFocusedWindow()
@@ -108,6 +172,106 @@ function M.moveToRightDisplay()
     win:setFrame(frame)
 end
 
+--- Focuses the window to the left of the current window
+function M.focusWindowLeft()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    win:focusWindowWest(nil, true, true)
+end
+
+--- Focuses the window below the current window
+function M.focusWindowDown()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    win:focusWindowSouth(nil, true, true)
+end
+
+--- Focuses the window above the current window
+function M.focusWindowUp()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    win:focusWindowNorth(nil, true, true)
+end
+
+--- Focuses the window to the right of the current window
+function M.focusWindowRight()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    win:focusWindowEast(nil, true, true)
+end
+
+--- Swaps the focused window with the window to the left
+function M.swapWindowLeft()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local targetWin = win:windowsToWest(nil, true, true)[1]
+    if not targetWin then return end
+
+    -- Get both window frames
+    local winFrame = win:frame()
+    local targetFrame = targetWin:frame()
+
+    -- Swap positions
+    win:setFrame(targetFrame)
+    targetWin:setFrame(winFrame)
+end
+
+--- Swaps the focused window with the window below
+function M.swapWindowDown()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local targetWin = win:windowsToSouth(nil, true, true)[1]
+    if not targetWin then return end
+
+    -- Get both window frames
+    local winFrame = win:frame()
+    local targetFrame = targetWin:frame()
+
+    -- Swap positions
+    win:setFrame(targetFrame)
+    targetWin:setFrame(winFrame)
+end
+
+--- Swaps the focused window with the window above
+function M.swapWindowUp()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local targetWin = win:windowsToNorth(nil, true, true)[1]
+    if not targetWin then return end
+
+    -- Get both window frames
+    local winFrame = win:frame()
+    local targetFrame = targetWin:frame()
+
+    -- Swap positions
+    win:setFrame(targetFrame)
+    targetWin:setFrame(winFrame)
+end
+
+--- Swaps the focused window with the window to the right
+function M.swapWindowRight()
+    local win = getFocusedWindow()
+    if not win then return end
+
+    local targetWin = win:windowsToEast(nil, true, true)[1]
+    if not targetWin then return end
+
+    -- Get both window frames
+    local winFrame = win:frame()
+    local targetFrame = targetWin:frame()
+
+    -- Swap positions
+    win:setFrame(targetFrame)
+    targetWin:setFrame(winFrame)
+end
+
 --- Binds all window management hotkeys
 -- @param modifiers table Array of modifier keys (e.g., {"cmd", "alt"})
 function M.bindHotkeys(modifiers)
@@ -117,11 +281,38 @@ function M.bindHotkeys(modifiers)
     hs.hotkey.bind(modifiers, "down", M.center)
 end
 
+--- Binds quarter-screen positioning hotkeys
+-- @param modifiers table Array of modifier keys (e.g., {"cmd", "alt"})
+function M.bindQuarterScreenHotkeys(modifiers)
+    hs.hotkey.bind(modifiers, "u", M.moveToTopLeft)
+    hs.hotkey.bind(modifiers, "i", M.moveToTopRight)
+    hs.hotkey.bind(modifiers, "n", M.moveToBottomLeft)
+    hs.hotkey.bind(modifiers, "m", M.moveToBottomRight)
+end
+
+--- Binds Vim-style window focus navigation hotkeys
+-- @param modifiers table Array of modifier keys (e.g., {"cmd", "alt"})
+function M.bindVimFocusHotkeys(modifiers)
+    hs.hotkey.bind(modifiers, "k", M.focusWindowLeft)
+    hs.hotkey.bind(modifiers, "o", M.focusWindowUp)
+    hs.hotkey.bind(modifiers, "l", M.focusWindowDown)
+    hs.hotkey.bind(modifiers, "ö", M.focusWindowRight)
+end
+
 --- Binds multi-display hotkeys for moving windows between screens
 -- @param modifiers table Array of modifier keys (e.g., {"cmd", "alt", "ctrl"})
 function M.bindMultiDisplayHotkeys(modifiers)
     hs.hotkey.bind(modifiers, "left", M.moveToLeftDisplay)
     hs.hotkey.bind(modifiers, "right", M.moveToRightDisplay)
+end
+
+--- Binds window swapping hotkeys
+-- @param modifiers table Array of modifier keys (e.g., {"cmd", "alt", "shift"})
+function M.bindWindowSwapHotkeys(modifiers)
+    hs.hotkey.bind(modifiers, "k", M.swapWindowLeft)
+    hs.hotkey.bind(modifiers, "o", M.swapWindowUp)
+    hs.hotkey.bind(modifiers, "l", M.swapWindowDown)
+    hs.hotkey.bind(modifiers, "ö", M.swapWindowRight)
 end
 
 return M
