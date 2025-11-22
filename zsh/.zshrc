@@ -82,6 +82,55 @@ gh() {
 EOF
 }
 
+# Hammerspoon Cheat Sheet
+hh() {
+  cat << 'EOF'
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     🔨 HAMMERSPOON HOTKEYS CHEAT SHEET 🔨                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+🖥️  APPLICATION TOGGLE
+  ⌘ Space                                Toggle Ghostty terminal
+  ⌘ ⇧ U                                  Run yt-dlp with clipboard URL
+
+🪟 WINDOW POSITIONING (⌘ ⌥ + Arrow)
+  ⌘ ⌥ ←                                  Left half of screen
+  ⌘ ⌥ →                                  Right half of screen
+  ⌘ ⌥ ↑                                  Maximize window
+  ⌘ ⌥ ↓                                  Center window
+
+🔲 QUARTER SCREEN (⌘ ⌥ + Key)
+  ⌘ ⌥ U                                  Top-left quarter
+  ⌘ ⌥ I                                  Top-right quarter
+  ⌘ ⌥ N                                  Bottom-left quarter
+  ⌘ ⌥ M                                  Bottom-right quarter
+
+🎯 FOCUS NAVIGATION (⌘ ⌥ + Key)
+  ⌘ ⌥ K                                  Focus window left
+  ⌘ ⌥ O                                  Focus window above
+  ⌘ ⌥ L                                  Focus window below
+  ⌘ ⌥ Ö                                  Focus window right
+
+🔄 WINDOW SWAP (⌘ ⌥ ⇧ + Key)
+  ⌘ ⌥ ⇧ K                                Swap with left neighbor
+  ⌘ ⌥ ⇧ O                                Swap with above neighbor
+  ⌘ ⌥ ⇧ L                                Swap with below neighbor
+  ⌘ ⌥ ⇧ Ö                                Swap with right neighbor
+
+🖥️  MULTI-DISPLAY (⌘ ⌥ ⌃ + Arrow)
+  ⌘ ⌥ ⌃ ←                                Move to left display
+  ⌘ ⌥ ⌃ →                                Move to right display
+
+🔧 SYSTEM
+  ⌃ ⌥ ⌘ B                                Sleep Mac
+  ⌘ ⌥ ⇧ R                                Reload Hammerspoon config
+
+🎵 MEDIA (Mouse Side Buttons)
+  Button 4                               Volume up
+  Button 5                               Volume down
+EOF
+}
+
 # Reset local branch to remote state
 gitresetremote() {
   local current_branch=$(git branch --show-current)
