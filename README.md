@@ -47,7 +47,7 @@ The following applications are installed via Homebrew:
 
 **Applications:**
 * Alfred
-* BetterTouchTool
+* Hammerspoon
 * Stats
 * Firefox
 * Ghostty
@@ -76,8 +76,10 @@ The following applications are installed via Homebrew:
 * Creates Ghostty config directory
 * Symlinks Ghostty configuration to `~/.config/ghostty/config`
 
-### 8. Setup BetterTouchTool
-* Symlinks BetterTouchTool preset to `~/.btt_autoload_preset.bttpreset`
+### 8. Setup Hammerspoon
+* Creates Hammerspoon config directory
+* Symlinks Hammerspoon configuration to `~/.hammerspoon/`
+* Configures window management, focus modes, and custom shortcuts
 
 ## Manual Steps
 
@@ -113,10 +115,11 @@ open -a Xcodes
 2. Configuration is automatically loaded from `~/.config/ghostty/config`
 3. Font and theme settings are pre-configured
 
-#### BetterTouchTool
-1. Open BetterTouchTool
-2. Go to Preferences → Presets
-3. The preset should auto-load from `~/.btt_autoload_preset.bttpreset`
+#### Hammerspoon
+1. Open Hammerspoon
+2. Configuration is automatically loaded from `~/.hammerspoon/`
+3. Window management shortcuts and focus modes are pre-configured
+4. Grant Accessibility permissions when prompted
 
 #### Zsh/Powerlevel10k
 If you need to reconfigure the prompt:

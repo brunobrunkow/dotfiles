@@ -4,7 +4,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # Path configuration
-export PATH=$HOME/bin:/usr/local/bin:$PATH
+# Standard user paths (personal scripts, Homebrew)
+export PATH="$HOME/bin:/usr/local/bin:$PATH"
+
+# PostgreSQL 13 from Homebrew
 export PATH="/opt/homebrew/opt/postgresql@13/bin:$PATH"
 
 # Oh-My-Zsh configuration
