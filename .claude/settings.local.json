@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:raw.githubusercontent.com)",
       "Read(//Users/brunobrunkow/**)",
-      "Bash(claude config get installMethod)"
+      "Bash(claude config get installMethod)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

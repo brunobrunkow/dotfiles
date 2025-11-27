@@ -16,6 +16,7 @@ local appToggle = require("modules.app-toggle")
 local windowMgmt = require("modules.window-management")
 local mediaControls = require("modules.media-controls")
 local urlCommand = require("modules.url-command")
+local audioToggle = require("modules.audio-toggle")
 
 --------------------------------------------------------------------------------
 -- Application Hotkeys
@@ -52,13 +53,20 @@ windowMgmt.bindWindowSwapHotkeys({"cmd", "alt", "shift"})
 -- Mouse buttons 4/5: volume control
 mediaControls.bindMouseButtons()
 
+-- Cmd+Shift+A: Toggle audio output device
+audioToggle.bindHotkey({"cmd", "shift"}, "A", "MacBook Air-Lautsprecher", "KT USB Audio")
+
 --------------------------------------------------------------------------------
 -- URL Commands
 --------------------------------------------------------------------------------
 
 -- Cmd+Shift+U: Download audio from clipboard URL
 urlCommand.bindHotkey({"cmd", "shift"}, "U",
-    "cd ~/Downloads && yt-dlp --cookies-from-browser firefox --audio-quality 0 -x --audio-format mp3 -o '%%(album)s/%%(playlist_index)02d-%%(title)s.%%(ext)s' %s")
+    "cd ~/Downloads && yt-dlp --cookies-from-browser firefox -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata -o '%%(album)s/%%(playlist_index&{:02d}. |)s%%(title)s.%%(ext)s' %s")
+
+-- Cmd+Shift+V: Download video from clipboard URL
+urlCommand.bindHotkey({"cmd", "shift"}, "V",
+    "cd ~/Downloads && yt-dlp --cookies-from-browser firefox -o '%%(title)s.%%(ext)s' %s")
 
 --------------------------------------------------------------------------------
 -- System Hotkeys

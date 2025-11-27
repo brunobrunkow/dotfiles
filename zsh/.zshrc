@@ -29,7 +29,7 @@ export DB_USER="brunobrunkow"
 export DB_PASSWORD="password"
 
 # Custom scripts
-alias gameon='sudo $HOME/Developer/Skripts/gameon.sh'
+alias go='sudo $HOME/Developer/Skripts/gameon.sh'
 
 # Git Cheat Sheet
 gh() {
@@ -91,7 +91,8 @@ hh() {
 
 🖥️  APPLICATION TOGGLE
   ⌘ Space                                Toggle Ghostty terminal
-  ⌘ ⇧ U                                  Run yt-dlp with clipboard URL
+  ⌘ ⇧ U                                  Download audio from clipboard URL
+  ⌘ ⇧ V                                  Download video from clipboard URL
 
 🪟 WINDOW POSITIONING (⌘ ⌥ + Arrow)
   ⌘ ⌥ ←                                  Left half of screen
@@ -125,9 +126,10 @@ hh() {
   ⌃ ⌥ ⌘ B                                Sleep Mac
   ⌘ ⌥ ⇧ R                                Reload Hammerspoon config
 
-🎵 MEDIA (Mouse Side Buttons)
+🎵 MEDIA
   Button 4                               Volume up
   Button 5                               Volume down
+  ⌘ ⇧ A                                  Toggle audio output device
 EOF
 }
 
