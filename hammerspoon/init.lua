@@ -61,8 +61,9 @@ audioToggle.bindHotkey({"cmd", "shift"}, "A", "MacBook Air-Lautsprecher", "KT US
 --------------------------------------------------------------------------------
 
 -- Cmd+Shift+U: Download audio from clipboard URL
+-- Add `--cookies-from-browser firefox` if needed for certain sites
 urlCommand.bindHotkey({"cmd", "shift"}, "U",
-    "cd ~/Downloads && yt-dlp --cookies-from-browser firefox -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata -o '%%(album)s/%%(playlist_index&{:02d}. |)s%%(title)s.%%(ext)s' %s")
+    "cd ~/Downloads && yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata -o '%%(album)s/%%(playlist_index&{:02d}. |)s%%(title)s.%%(ext)s' %s")
 
 -- Cmd+Shift+V: Download video from clipboard URL
 urlCommand.bindHotkey({"cmd", "shift"}, "V",
