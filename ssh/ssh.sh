@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
@@ -26,7 +26,7 @@ else
     read -p "  Would you like to create an SSH key now? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        read -p "  Enter your email address: " email
+        read -r -p "  Enter your email address: " email
         if ssh-keygen -t ed25519 -C "$email" -f "$SSH_KEY_PATH"; then
             echo "  ✅ SSH key created at $SSH_KEY_PATH"
         else

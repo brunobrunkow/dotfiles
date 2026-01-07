@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+SCRIPT_PATH="$HOME/Developer/Skripts/gameon.sh"
+
+if [ ! -x "$SCRIPT_PATH" ]; then
+  echo "gameon: script not found or not executable at $SCRIPT_PATH" >&2
+  exit 1
+fi
+
+exec sudo "$SCRIPT_PATH"

@@ -95,6 +95,13 @@ else
     exit 1
 fi
 
+if chmod +x "$DOTFILES_DIR/bin/gameon"; then
+    echo "  ✅ Ensured gameon is executable"
+else
+    echo "  ❌ Failed to set executable bit on gameon" >&2
+    exit 1
+fi
+
 if ln -sf "$DOTFILES_DIR/zsh/p10k/.p10k.zsh" ~/.p10k.zsh; then
     echo "  ✅ Created symlink for .p10k.zsh"
 else

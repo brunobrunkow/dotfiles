@@ -5,7 +5,7 @@ fi
 
 # Path configuration
 # Standard user paths (personal scripts, Homebrew)
-export PATH="$HOME/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/bin:/usr/local/bin:$HOME/Developer/dotfiles/bin:$PATH"
 
 # PostgreSQL 13 from Homebrew
 export PATH="/opt/homebrew/opt/postgresql@13/bin:$PATH"
@@ -20,16 +20,8 @@ source $ZSH/oh-my-zsh.sh
 # Powerlevel10k configuration
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Environment variables
-export API_SECRET_KEY=""
-export ARCHIVE_POSTS_COUNT="5000"
-export ENABLE_SSL="false"
-export INITIAL_LOAD_POST_COUNT="500"
-export DB_USER="brunobrunkow"
-export DB_PASSWORD="password"
-
 # Custom scripts
-alias go='sudo $HOME/Developer/Skripts/gameon.sh'
+alias go="$HOME/Developer/dotfiles/bin/gameon"
 
 # Git Cheat Sheet
 gh() {

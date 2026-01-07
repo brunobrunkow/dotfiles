@@ -7,6 +7,11 @@ print_success() {
     printf "\e[0;32m  [✔] $1\n\e[0m"
 }
 
+if ! command -v defaults >/dev/null 2>&1; then
+    echo "defaults command not found; skipping macOS preferences."
+    exit 0
+fi
+
 echo "Setting up macOS preferences..."
 
 # Scroll direction natural : False
@@ -39,4 +44,8 @@ print_success "Printer app quit once the prints complete."
 defaults write com.apple.LaunchServices LSQuarantine -bool false
 print_success "Are you sure you want to open this app dialog disabled."
 
+echo "Restarting affected services..."
+killall Dock >/dev/null 2>&1 || true
+killall Finder >/dev/null 2>&1 || true
+killall SystemUIServer >/dev/null 2>&1 || true
 echo "macOS preferences setup complete!"
