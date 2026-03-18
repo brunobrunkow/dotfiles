@@ -47,5 +47,4 @@ clean:
 	@rm -rf ~/.hammerspoon && echo "  ✅ Removed ~/.hammerspoon" || true
 	@rm -f ~/.claude/CLAUDE.md && echo "  ✅ Removed ~/.claude/CLAUDE.md" || true
 	@rm -f ~/.claude/settings.json && echo "  ✅ Removed ~/.claude/settings.json" || true
-	@rm -f ~/.claude/projects && echo "  ✅ Removed ~/.claude/projects" || true
 	@echo "✅ All symlinks removed!\n"

@@ -1,4 +1,0 @@
-{"type":"file-history-snapshot","messageId":"01f24ab5-f22b-404e-8ed8-734eeca08fe4","snapshot":{"messageId":"01f24ab5-f22b-404e-8ed8-734eeca08fe4","trackedFileBackups":{},"timestamp":"2026-03-14T18:53:44.905Z"},"isSnapshotUpdate":false}
-{"parentUuid":null,"isSidechain":false,"promptId":"45877d59-1542-4c43-a5b9-e18f438842a0","type":"user","message":{"role":"user","content":"\n/usage"},"uuid":"01f24ab5-f22b-404e-8ed8-734eeca08fe4","timestamp":"2026-03-14T18:53:44.905Z","permissionMode":"default","userType":"external","cwd":"/Users/brunobrunkow/Library/Application Support/CodexBar/ClaudeProbe","sessionId":"71c61b48-6272-46e1-8e07-ff376434cf29","version":"2.1.74","gitBranch":"HEAD"}
-{"type":"queue-operation","operation":"enqueue","timestamp":"2026-03-14T18:54:08.936Z","sessionId":"71c61b48-6272-46e1-8e07-ff376434cf29","content":"/status"}
-{"type":"last-prompt","lastPrompt":"/usage","sessionId":"71c61b48-6272-46e1-8e07-ff376434cf29"}

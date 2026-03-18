@@ -35,16 +35,4 @@ else
     exit 1
 fi
 
-# Symlink projects directory
-if [ -d "$CLAUDE_DIR/projects" ] && [ ! -L "$CLAUDE_DIR/projects" ]; then
-    echo "  ⚠️  Backing up existing projects directory"
-    mv "$CLAUDE_DIR/projects" "$CLAUDE_DIR/projects.backup.$(date +%Y%m%d_%H%M%S)"
-fi
-if ln -sf "$DOTFILES_CLAUDE_DIR/projects" "$CLAUDE_DIR/projects"; then
-    echo "  ✅ Symlinked projects directory"
-else
-    echo "  ❌ Failed to symlink projects directory" >&2
-    exit 1
-fi
-
 echo "🎉 Claude Code setup complete!"

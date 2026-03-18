@@ -77,7 +77,7 @@ The following applications are installed via Homebrew:
 * Symlinks Ghostty configuration to `~/.config/ghostty/config`
 
 ### 8. Setup Claude Code
-* Symlinks `CLAUDE.md`, `settings.json`, and `projects/` to `~/.claude/`
+* Symlinks `CLAUDE.md` and `settings.json` to `~/.claude/`
 * Backs up existing configs before symlinking
 
 ### 9. Setup Hammerspoon
