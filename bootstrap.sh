@@ -8,7 +8,7 @@ echo "║  🚀 Dotfiles Installation Starting   ║"
 echo "╚══════════════════════════════════════╝"
 
 # Backup existing configs
-echo "\n💾 [0/8] Backing up existing configs..."
+echo "\n💾 [0/9] Backing up existing configs..."
 if command -v make >/dev/null 2>&1; then
     make backup 2>/dev/null || echo "⚠️  No existing configs to backup"
 else
@@ -22,7 +22,7 @@ fi
 echo "✅ Backup complete\n"
 
 # Xcode command line tools
-echo "🛠️  [1/8] Installing Xcode command line tools..."
+echo "🛠️  [1/9] Installing Xcode command line tools..."
 if xcode-select -p >/dev/null 2>&1; then
     echo "  ⚠️  Xcode command line tools already installed, skipping..."
 else
@@ -39,7 +39,7 @@ fi
 echo "✅ Xcode setup complete\n"
 
 # OSX preferences
-echo "🍎 [2/8] Setting up macOS preferences..."
+echo "🍎 [2/9] Setting up macOS preferences..."
 if sh osx/osx.sh; then
     echo "✅ macOS preferences configured\n"
 else
@@ -48,7 +48,7 @@ else
 fi
 
 # Homebrew 🍺
-echo "🍺 [3/8] Setting up Homebrew..."
+echo "🍺 [3/9] Setting up Homebrew..."
 if sh brew/brew.sh; then
     echo "✅ Homebrew setup complete\n"
 else
@@ -57,7 +57,7 @@ else
 fi
 
 # ZSH
-echo "💻 [4/8] Setting up Zsh..."
+echo "💻 [4/9] Setting up Zsh..."
 if sh zsh/zsh.sh; then
     echo "✅ Zsh setup complete\n"
 else
@@ -66,7 +66,7 @@ else
 fi
 
 # GIT
-echo "📦 [5/8] Setting up Git..."
+echo "📦 [5/9] Setting up Git..."
 if sh git/git.sh; then
     echo "✅ Git setup complete\n"
 else
@@ -75,7 +75,7 @@ else
 fi
 
 # SSH
-echo "🔐 [6/8] Setting up SSH..."
+echo "🔐 [6/9] Setting up SSH..."
 if sh ssh/ssh.sh; then
     echo "✅ SSH setup complete\n"
 else
@@ -84,7 +84,7 @@ else
 fi
 
 # Ghostty
-echo "👻 [7/8] Setting up Ghostty..."
+echo "👻 [7/9] Setting up Ghostty..."
 if sh ghostty/ghostty.sh; then
     echo "✅ Ghostty setup complete\n"
 else
@@ -92,8 +92,17 @@ else
     exit 1
 fi
 
+# Claude Code
+echo "🤖 [8/9] Setting up Claude Code..."
+if sh claude/claude.sh; then
+    echo "✅ Claude Code setup complete\n"
+else
+    echo "❌ Failed to setup Claude Code" >&2
+    exit 1
+fi
+
 # Hammerspoon
-echo "🔨 [8/8] Setting up Hammerspoon..."
+echo "🔨 [9/9] Setting up Hammerspoon..."
 if sh hammerspoon/hammerspoon.sh; then
     echo "✅ Hammerspoon setup complete\n"
 else

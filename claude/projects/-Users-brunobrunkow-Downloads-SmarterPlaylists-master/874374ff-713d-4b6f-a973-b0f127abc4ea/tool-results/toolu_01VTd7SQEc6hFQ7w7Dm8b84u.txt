@@ -1,0 +1,2161 @@
+     1→import pbl
+     2→import plugs
+     3→import copy
+     4→import pyen
+     5→import datetime
+     6→import mixer
+     7→
+     8→exported_inventory = None
+     9→genres_enabled = False
+    10→
+    11→en = None
+    12→if genres_enabled:
+    13→    en = pyen.Pyen()
+    14→    en.debug = True
+    15→
+    16→
+    17→inventory = {
+    18→    "types" : {
+    19→        "day_of_week": [
+    20→            { "name": "Monday", "value": 0 },
+    21→            { "name": "Tuesday", "value": 1 },
+    22→            { "name": "Wednesday", "value": 2 },
+    23→            { "name": "Thursday", "value": 3 },
+    24→            { "name": "Friday", "value": 4 },
+    25→            { "name": "Saturday", "value": 5 },
+    26→            { "name": "Sunday", "value": 6 }
+    27→        ],
+    28→        "color": [
+    29→            { "name": "black", "value": "#000000" },
+    30→            { "name": "red", "value": "#ff0000"  },
+    31→            { "name": "green", "value": "#00ff00"  },
+    32→            { "name": "blue", "value": "#0000ff"  },
+    33→         ],
+    34→         "annotations": [
+    35→            { "name" : "Spotify", "value" : "spotify" },
+    36→            { "name" : "Echo Nest", "value" : "echonest" },
+    37→            { "name" : "audio", "value" : "audio" }
+    38→         ],
+    39→
+    40→         "playlist_suffix": [
+    41→            { "name" : "none", "value" : "none" },
+    42→            { "name" : "time", "value" : "time" },
+    43→            { "name" : "date", "value" : "date" },
+    44→            { "name" : "day-of-week", "value" : "day-of-week" },
+    45→            { "name" : "day-of-month", "value" : "day-of-month" }
+    46→         ],
+    47→
+    48→         "scale": [
+    49→            { "name" : "most", "value" : 0 },
+    50→            { "name" : "more", "value" : 1 },
+    51→            { "name" : "less", "value" : 2 },
+    52→            { "name" : "least", "value" : 3 },
+    53→            { "name" : "all", "value" : 4 },
+    54→         ],
+    55→
+    56→         "time_range": [
+    57→            { "name": "short term", "value": "short_term" },
+    58→            { "name": "medium term", "value": "medium_term" },
+    59→            { "name": "long term", "value": "long_term" }
+    60→         ],
+    61→
+    62→         "range_attributes" : [
+    63→            { 
+    64→                "name" : "artist popularity", 
+    65→                "value" : "spotify.primary_artist_popularity",
+    66→                "min_value": 0,
+    67→                "max_value": 100,
+    68→                "description": """ A normalized estimation of how popular the
+    69→                primary artist of a track is based on recent streaming."""
+    70→            },
+    71→            { 
+    72→                "name" : "artist followers", 
+    73→                "value" : "spotify.primary_artist_followers",
+    74→                "min_value" : 0,
+    75→                "description": """ The current number of followers for the
+    76→                primary artist of the track."""
+    77→            },
+    78→            { 
+    79→                "name" : "album popularity", 
+    80→                "value" : "spotify.album_popularity",
+    81→                "min_value": 0,
+    82→                "max_value": 100,
+    83→                "description": """ A normalized estimation of how popular the
+    84→                album of a track is based on recent streaming."""
+    85→            },
+    86→            { 
+    87→                "name" : "track popularity", 
+    88→                "value" : "spotify.popularity",
+    89→                "min_value": 0,
+    90→                "max_value": 100,
+    91→                "description": """ A normalized estimation of how popular the
+    92→                track is based on recent streaming."""
+    93→            },
+    94→            { 
+    95→                "name" : "speechiness", 
+    96→                "value" : "audio.speechiness",
+    97→                "min_value": 0,
+    98→                "max_value": 1,
+    99→                "description": """Estimates the amount of spoken word in a
+   100→                track. The more exclusively speech-like the track (e.g. talk
+   101→                show, audio book, poetry), the closer to 1.0 the attribute
+   102→                value. Values above 0.66 describe tracks that are probably made
+   103→                entirely of spoken words. Values between 0.33 and 0.66 describe
+   104→                tracks that may contain both music and speech, either in
+   105→                sections or layered, including such cases as rap music. Values
+   106→                below 0.33 most likely represent music and other non-speech-like
+   107→                tracks."""
+   108→            },
+   109→            { 
+   110→                "name" : "acousticness", 
+   111→                "value" : "audio.acousticness",
+   112→                "min_value": 0,
+   113→                "max_value": 1,
+   114→                "description": """Estimates the likelihood a recording was
+   115→                created by solely acoustic means such as voice and acoustic
+   116→                instruments as opposed to electronically such as with
+   117→                synthesized, amplified, or effected instruments. Tracks with low
+   118→                acousticness include electric guitars, distortion, synthesizers,
+   119→                auto-tuned vocals, and drum machines, whereas songs with
+   120→                orchestral instruments, acoustic guitars, unaltered voice, and
+   121→                natural drum kits will have acousticness values closer to
+   122→                1.0."""
+   123→            },
+   124→            { 
+   125→                "name" : "danceability", 
+   126→                "value" : "audio.danceability",
+   127→                "min_value": 0,
+   128→                "max_value": 1,
+   129→                "description": """Describes how suitable a track is for dancing
+   130→                using a number of musical elements (the more suitable for
+   131→                dancing, the closer to 1.0 the value). The combination of
+   132→                musical elements that best characterize danceability include
+   133→                tempo, rhythm stability, beat strength, and overall
+   134→                regularity."""
+   135→            },
+   136→            { 
+   137→                "name" : "energy", 
+   138→                "value" : "audio.energy",
+   139→                "min_value": 0,
+   140→                "max_value": 1,
+   141→                "description": """Represents a perceptual measure of intensity
+   142→                and powerful activity released throughout the track. Typical
+   143→                energetic tracks feel fast, loud, and noisy. For example, death
+   144→                metal has high energy, while a Bach prelude scores low on the
+   145→                scale. Perceptual features contributing to this attribute
+   146→                include dynamic range, perceived loudness, timbre, onset rate,
+   147→                and general entropy."""
+   148→            },
+   149→            { 
+   150→                "name" : "tempo", 
+   151→                "value" : "audio.tempo",
+   152→                "min_value": 30,
+   153→                "max_value": 300,
+   154→                "description": """The overall estimated tempo of a track in
+   155→                beats per minute (BPM). In musical terminology, tempo is the
+   156→                speed or pace of a given piece and derives directly from the
+   157→                average beat duration. """
+   158→            },
+   159→            { 
+   160→                "name" : "instrumentalness", 
+   161→                "value" : "audio.instrumentalness",
+   162→                "min_value": 0,
+   163→                "max_value": 1,
+   164→                "description": """Predicts whether a track contains no vocals.
+   165→                "Ooh" and "aah" sounds are treated as instrumental in this
+   166→                context. Rap or spoken word tracks are clearly "vocal". The
+   167→                closer the instrumentalness value is to 1.0, the greater
+   168→                likelihood the track contains no vocal content. Values above 0.5
+   169→                are intended to represent instrumental tracks, but confidence is
+   170→                higher as the value approaches 1.0."""
+   171→            },
+   172→            { 
+   173→                "name" : "key", 
+   174→                "value" : "audio.key",
+   175→                "min_value": 0,
+   176→                "max_value": 12,
+   177→                "description": """The key the track is in. Integers map to
+   178→                pitches using standard Pitch Class notation. E.g. 0 = C, 1 =
+   179→                C#, 2 = D, and so on."""
+   180→            },
+   181→            { 
+   182→                "name" : "liveness", 
+   183→                "value" : "audio.liveness",
+   184→                "min_value": 0,
+   185→                "max_value": 1,
+   186→                "description": """ Detects the presence of an audience in the
+   187→                recording. The more confident that the track is live, the closer
+   188→                to 1.0 the attribute value. A value above 0.8 provides strong
+   189→                likelihood that the track is live."""
+   190→            },
+   191→            { 
+   192→                "name" : "mode", 
+   193→                "value" : "audio.mode",
+   194→                "min_value": 0,
+   195→                "max_value": 1,
+   196→                "description": """Indicates the modality (major or minor)
+   197→                of a track, the type of scale from which its melodic content is
+   198→                derived. Major is represented by 1 and minor is 0."""
+   199→            },
+   200→            { 
+   201→                "name" : "time signature", 
+   202→                "value" : "audio.time_signature",
+   203→                "min_value": 1,
+   204→                "max_value": 10,
+   205→                "description": """Estimates of the overall time signature of a
+   206→                track. The time signature (meter) is a notational convention to
+   207→                specify how many beats are in each bar (or measure)."""
+   208→            },
+   209→            { 
+   210→                "name" : "loudness", 
+   211→                "value" : "audio.loudness",
+   212→                "min_value": -60,
+   213→                "max_value": 5, "description": """The overall loudness of a track in decibels (dB).
+   214→                Loudness values are averaged across the entire track and are
+   215→                useful for comparing relative loudness of tracks. Loudness is
+   216→                the quality of a sound that is the primary psychological
+   217→                correlate of physical strength (amplitude)."""
+   218→            },
+   219→            { 
+   220→                "name" : "valence", 
+   221→                "value" : "audio.valence",
+   222→                "min_value": 0,
+   223→                "max_value": 1,
+   224→                "description": """A measure from 0.0 to 1.0 describing the
+   225→                musical "positiveness" conveyed by a track. Tracks with high
+   226→                valence sound more positive (e.g., happy, cheerful, euphoric),
+   227→                while tracks with low valence sound more negative (e.g. sad,
+   228→                depressed, angry)."""
+   229→            },
+   230→            { 
+   231→                "name" : "duration", 
+   232→                "value" : "duration",
+   233→                "min_value": 0,
+   234→                "max_value": 10000,
+   235→                "description": "The duration of the track, in seconds"
+   236→            },
+   237→            { 
+   238→                "name" : "popularity", 
+   239→                "value" : "spotify.popularity",
+   240→                "min_value": 0,
+   241→                "max_value": 100,
+   242→                "description": """A normalized estimation of how popular the
+   243→                track is based on recent streaming."""
+   244→            },
+   245→            { 
+   246→                "name" : "track number", 
+   247→                "value" : "spotify.track_number",
+   248→                "min_value": 0,
+   249→                "max_value": 100,
+   250→                "description": """The position of the track on its album. If an 
+   251→                album has several discs, the track number is the number on the specified
+   252→                disc."""
+   253→            },
+   254→            { 
+   255→                "name" : "disc number", 
+   256→                "value" : "spotify.disc_number",
+   257→                "min_value": 1,
+   258→                "max_value": 100,
+   259→                "description": """The disc number (usually 1 unless the album
+   260→                consists of more than one disc)."""
+   261→            }
+   262→         ],
+   263→         "sort_attributes" : [
+   264→            { "name" : "artist popularity", "value" : "spotify.primary_artist_popularity"},
+   265→            { "name" : "artist followers", "value" : "spotify.primary_artist_followers"},
+   266→            { "name" : "album popularity", "value" : "spotify.album_popularity"},
+   267→            { "name" : "album date", "value" : "spotify.album_release_date"},
+   268→            { "name" : "track popularity", "value" : "spotify.popularity"},
+   269→
+   270→            { "name" : "speechiness", "value" : "audio.speechiness"},
+   271→            { "name" : "acousticness", "value" : "audio.acousticness"},
+   272→            { "name" : "danceability", "value" : "audio.danceability"},
+   273→            { "name" : "energy", "value" : "audio.energy"},
+   274→            { "name" : "tempo", "value" : "audio.tempo"},
+   275→            { "name" : "instrumentalness", "value" : "audio.instrumentalness"},
+   276→            { "name" : "key", "value" : "audio.key"},
+   277→            { "name" : "liveness", "value" : "audio.liveness"},
+   278→            { "name" : "mode", "value" : "audio.mode"},
+   279→            { "name" : "time signature", "value" : "audio.time_signature"},
+   280→            { "name" : "loudness", "value" : "audio.loudness"},
+   281→            { "name" : "valence", "value" : "audio.valence"},
+   282→
+   283→            { "name" : "artist name ", "value" : "artist"},
+   284→            { "name" : "title", "value" : "title"},
+   285→            { "name" : "src", "value" : "src"},
+   286→            { "name" : "duration", "value" : "duration"},
+   287→            { "name" : "artist", "value" : "artist"},
+   288→            { "name" : "title", "value" : "title"},
+   289→
+   290→            { "name" : "popularity", "value" : "spotify.popularity"},
+   291→            { "name" : "explicit", "value" : "spotify.explicit"},
+   292→            { "name" : "track number", "value" : "spotify.track_number"},
+   293→            { "name" : "disc number", "value" : "spotify.disc_number"}
+   294→
+   295→            # TODO - get rid of echonest stuff, add full album attributes, to
+   296→            # get the release date, album type, genre and so on
+   297→            # add full artist attributes to get artist popularity, genres
+   298→            #
+   299→         ]
+   300→    },
+   301→
+   302→    "components" : [
+   303→        {
+   304→            "name" : "Annotator",
+   305→            "display": "annotate",
+   306→            "class": pbl.Annotator,
+   307→            "type" : "combiner",
+   308→            "description": "Annotates tracks with external information",
+   309→            "help" : """This component will add information to the tracks on the
+   310→            input stream. This can make downstream operations like range filters
+   311→            run much faster.  Supported annotation types are <i>echonest</i>,
+   312→            <i>audio</i> and <i>spotify</i>""",
+   313→            "title" : "annotate with $type data",
+   314→            "params": {
+   315→                "source": {
+   316→                    "type" : "port",
+   317→                    "optional" : False,
+   318→                    "port": "green",
+   319→                    "max_inputs": 1,
+   320→                    "description": "the source of the tracks",
+   321→                },
+   322→                "type": {
+   323→                    "type" : "annotations",
+   324→                    "optional" : False,
+   325→                    "default" : "audio",
+   326→                    "description": "the type of annotation",
+   327→                },
+   328→            }
+   329→        },
+   330→        {
+   331→            "name" : "DeDup",
+   332→            "display": "de-dup",
+   333→            "class": pbl.DeDup,
+   334→            "type" : "filter",
+   335→            "description": "Remove any duplicate tracks in the stream",
+   336→            "help" : """ This component will remove any duplicate tracks from
+   337→            the stream.  
+   338→            If <b> By Name </b> is set, then tracks dedupped by
+   339→            artist and title, otherwise, they are dedupped based upon their
+   340→            track id""",
+   341→            "params": {
+   342→                "source": {
+   343→                    "type" : "port",
+   344→                    "optional" : False,
+   345→                    "port": "green",
+   346→                    "max_inputs": 1,
+   347→                    "description": "the source of the tracks",
+   348→                },
+   349→                "by_name": {
+   350→                    "display" : "By name",
+   351→                    "type" : "bool",
+   352→                    "optional" : True,
+   353→                    "default": False,
+   354→                    "description": " if True also match by name in addition to the regular ID match",
+   355→                },
+   356→            }
+   357→        },
+   358→        {
+   359→            "name" : "ArtistDeDup",
+   360→            "display": "artist de-dup",
+   361→            "class": plugs.ArtistDeDup,
+   362→            "type" : "filter",
+   363→            "description": "Ensure only unique artists appear in the track stream",
+   364→            "help" : """ This component will remove any tracks with duplicate
+   365→            artists from the stream. """,
+   366→            "params": {
+   367→                "source": {
+   368→                    "type" : "port",
+   369→                    "optional" : False,
+   370→                    "port": "green",
+   371→                    "max_inputs": 1,
+   372→                    "description": "the source of the tracks",
+   373→                },
+   374→            }
+   375→        },
+   376→        {
+   377→            "name" : "ArtistSeparation",
+   378→            "display": "artist separation",
+   379→            "class": plugs.ArtistSeparation,
+   380→            "type" : "filter",
+   381→            "description": "Enforces a specified separation of artists in the track stream",
+   382→            "help" : """ This component will guarantee that artists will not
+   383→            appear closer together than the given <b>minimum artist separation</b> in the
+   384→            track stream. If <b>reorder</b> is set, then tracks may be reordered
+   385→            to enforce the separation, otherwise, if <b>reorder</b> is not set,
+   386→            then offending tracks are removed from the stream.""",
+   387→            "params": {
+   388→                "source": {
+   389→                    "type" : "port",
+   390→                    "optional" : False,
+   391→                    "port": "green",
+   392→                    "max_inputs": 1,
+   393→                    "description": "the source of the tracks",
+   394→                },
+   395→                "min_separation": {
+   396→                    "type" : "number",
+   397→                    "optional" : True,
+   398→                    "default" : 4,
+   399→                    "display" : "minimum artist separation",
+   400→                    "description": "minimum number of tracks between tracks by the same artist"
+   401→                },
+   402→                "reorder": {
+   403→                    "type" : "bool",
+   404→                    "optional" : True,
+   405→                    "default" : True,
+   406→                    "display": "reorder",
+   407→                    "description": "if true, tracks may be reordered to enforce artist separation, otherwise, offending tracks are simply omitted  from the stream",
+   408→                },
+   409→            }
+   410→        },
+   411→        {
+   412→            "name" : "comment",
+   413→            "display": "comment",
+   414→            "class": plugs.Comment,
+   415→            "type" : "misc",
+   416→            "title": "$text",
+   417→            "description": "Add a comment to the program",
+   418→            "help" : """This component lets you add arbitrary comments to your
+   419→            program.  Comments have no effect on how a program will execute""",
+   420→            "max_outputs": 0,
+   421→            "params": {
+   422→                "text": {
+   423→                    "type" : "string",
+   424→                    "optional" : True,
+   425→                    "description": "the text for the comment",
+   426→                }
+   427→            }
+   428→        },
+   429→        {
+   430→            "name" : "TrackFilter",
+   431→            "class": plugs.TrackFilter,
+   432→            "display": "track filter",
+   433→            "type" : "filter",
+   434→            "description": "removes track from a stream",
+   435→            "help": """ This component takes two input streams. It produces a
+   436→            stream of tracks from the green input
+   437→            stream with the tracks on the red input stream removed.  If the 
+   438→            <b>invert</b> flag is set, the filter is inverted, that is, it will
+   439→            produce a stream of tracks that consist of the tracks on the green
+   440→            input stream with the tracks that are <b> not </b> on the red
+   441→            stream.
+   442→            If <b> By Name </b> is set, then tracks are matched by name in
+   443→            addition to the regular ID match
+   444→            """,
+   445→            "params": {
+   446→                "true_source": {
+   447→                    "type" : "port",
+   448→                    "optional" : False,
+   449→                    "port": "green",
+   450→                    "max_inputs" : 1,
+   451→                    "description": "the source of tracks",
+   452→                },
+   453→                "false_source": {
+   454→                    "type" : "port",
+   455→                    "optional" : False,
+   456→                    "port": "red",
+   457→                    "max_inputs" : 1,
+   458→                    "description": "the tracks to be removed",
+   459→                },
+   460→                "invert": {
+   461→                    "type": "bool",
+   462→                    "default": False,
+   463→                    "optional" : True,
+   464→                    "description": "if set, only tracks on both input streams will be passed through"
+   465→                },
+   466→                "by_name": {
+   467→                    "display" : "By name",
+   468→                    "type" : "bool",
+   469→                    "optional" : True,
+   470→                    "default": False,
+   471→                    "description": " if True also match by name in addition to the regular ID match",
+   472→                },
+   473→            }
+   474→        },
+   475→        {
+   476→            "name" : "ArtistFilter",
+   477→            "class": plugs.ArtistFilter,
+   478→            "display": "artist filter",
+   479→            "type" : "filter",
+   480→            "description": "removes track from a stream by artist",
+   481→            "help": """ This component takes two input streams. It produces a
+   482→            stream of tracks that consist of the tracks on the green input
+   483→            stream with the tracks by artists of the tracks on the red input
+   484→            stream removed. If the <b>invert</b> parameter is set, the sense of
+   485→            the filter is reverse, i.e. the component will produce only tracks 
+   486→            from the green stream that are by artists on the red stream """,
+   487→            "params": {
+   488→                "true_source": {
+   489→                    "type" : "port",
+   490→                    "optional" : False,
+   491→                    "port": "green",
+   492→                    "max_inputs" : 1,
+   493→                    "description": "the source of tracks",
+   494→                },
+   495→                "false_source": {
+   496→                    "type" : "port",
+   497→                    "optional" : False,
+   498→                    "port": "red",
+   499→                    "max_inputs" : 1,
+   500→                    "description": "the tracks (by artist) to be removed",
+   501→                },
+   502→                "invert": {
+   503→                    "type": "bool",
+   504→                    "default": False,
+   505→                    "optional" : True,
+   506→                    "description": "if set, only tracks by artists on the red stream will be passed through"
+   507→                },
+   508→            }
+   509→        },
+   510→        {
+   511→            "name" : "YesNo",
+   512→            "class": plugs.YesNo,
+   513→            "display": "yes or no",
+   514→            "type" : "conditional",
+   515→            "description": "selects a stream based on a boolean",
+   516→
+   517→            "help": """ This component excepts a red and a green input stream.
+   518→            If the <b> yes </b> parameter is set, tracks from the green stream
+   519→            will be passed through, otherwise, tracks from the red stream will
+   520→            be passed through""",
+   521→
+   522→            "params": {
+   523→                "true_source": {
+   524→                    "type" : "port",
+   525→                    "optional" : False,
+   526→                    "port": "green",
+   527→                    "max_inputs" : 1,
+   528→                    "description": "the source of tracks when yes",
+   529→                },
+   530→                "false_source": {
+   531→                    "type" : "port",
+   532→                    "optional" : False,
+   533→                    "port": "red",
+   534→                    "max_inputs" : 1,
+   535→                    "description": "the source of tracks when no",
+   536→                },
+   537→                "yes": {
+   538→                    "type" : "bool",
+   539→                    "optional" : False,
+   540→                    "description": "if true chose the yes stream",
+   541→                },
+   542→            }
+   543→        },
+   544→        {
+   545→            "name" : "IsWeekend",
+   546→            "class": plugs.IsWeekend,
+   547→            "display": "is weekend",
+   548→            "type" : "conditional",
+   549→            "description": "selects a stream based on whether or not today is a weekend",
+   550→
+   551→            "help" : """This component accepts a green and a red stream. If the
+   552→            current day is a weekend, tracks from the green stream are passed
+   553→            through, otherwise tracks from the red stream are passed
+   554→            through.""",
+   555→
+   556→            "params": {
+   557→                "true_source": {
+   558→                    "type" : "port",
+   559→                    "optional" : False,
+   560→                    "port": "green",
+   561→                    "max_inputs" : 1,
+   562→                    "description": "the source of tracks when it is a weekend",
+   563→                },
+   564→                "false_source": {
+   565→                    "type" : "port",
+   566→                    "optional" : False,
+   567→                    "port": "red",
+   568→                    "max_inputs" : 1,
+   569→                    "description": "the source of tracks when it is not a weekend",
+   570→                },
+   571→            }
+   572→        },
+   573→        {
+   574→            "name" : "IsDayOfWeek",
+   575→            "class": plugs.IsDayOfWeek,
+   576→            "type" : "conditional",
+   577→            "display": "is day of week",
+   578→            "title": "is $day",
+   579→            "description": "selects a stream based on whether is is the given day of the week",
+   580→
+   581→            "help" : """This component accepts a green and a red stream. If the
+   582→            current day matches the day specified, tracks from the green stream are passed
+   583→            through, otherwise tracks from the red stream are passed
+   584→            through.""",
+   585→
+   586→            "params": {
+   587→                "true_source": {
+   588→                    "type" : "port",
+   589→                    "optional" : False,
+   590→                    "port": "green",
+   591→                    "max_inputs" : 1,
+   592→                    "description": "the source of tracks when the day matches",
+   593→                },
+   594→                "false_source": {
+   595→                    "type" : "port",
+   596→                    "optional" : False,
+   597→                    "port": "red",
+   598→                    "max_inputs" : 1,
+   599→                    "description": "the source of tracks when the day doesn't match",
+   600→                },
+   601→                "day": {
+   602→                    "type" : "day_of_week",
+   603→                    "stype" : "number",
+   604→                    "optional" : False,
+   605→                    "description": "the day of the week",
+   606→                },
+   607→            }
+   608→        },
+   609→        {
+   610→            "name" : "AlbumSource",
+   611→            "class": pbl.AlbumSource,
+   612→            "display": "album",
+   613→            "type" : "source",
+   614→
+   615→            "description": "generates a series of tracks given an album",
+   616→            "help" : """ If an album <b> uri </b> is specified, the tracks from
+   617→            that album are generated, otherwise tracks from the album with the given
+   618→            <b>artist</b> and <b>title</b> are generated""",
+   619→
+   620→            "title": "$title",
+   621→            "params": {
+   622→                "title": {
+   623→                    "type" : "string",
+   624→                    "optional" : True,
+   625→                    "description": "the title of the album",
+   626→                },
+   627→                "artist": {
+   628→                    "type" : "string",
+   629→                    "optional" : True,
+   630→                    "description": "the name of the artist",
+   631→                },
+   632→                "uri": {
+   633→                    "type" : "uri",
+   634→                    "optional" : True,
+   635→                    "description": "the uri of the artist",
+   636→                },
+   637→            }
+   638→        },
+   639→        {
+   640→            "name" : "TrackSource",
+   641→            "class": pbl.TrackSource,
+   642→            "display": "track uris",
+   643→            "type" : "source",
+   644→            "description": "generates a series of tracks given their URIs",
+   645→
+   646→            "help": """ This component generates a series of one or more tracks
+   647→            given their URIs. You specify the URIs as a comma separated list of
+   648→            tracks like so: <pre> spotify:track:69JnEQF6OCntGndij5BTlq,
+   649→            spotify:track:00t1USAjV7tiTDwlN6U44I </pre>.""",
+   650→
+   651→            "params": {
+   652→                "uris": {
+   653→                    "type" : "uri_list",
+   654→                    "optional" : False,
+   655→                    "description": "a list of track uris",
+   656→                },
+   657→            }
+   658→        },
+   659→        {
+   660→            "name" : "TrackSourceByName",
+   661→            "class": pbl.TrackSourceByName,
+   662→            "description": "generates a single track given its name",
+   663→
+   664→            "help": """ This component will search for the most popular track
+   665→            with the given title and artist.""",
+   666→
+   667→            "display": "track",
+   668→            "type" : "source",
+   669→            "title" : "$title",
+   670→            "params": {
+   671→                "title": {
+   672→                    "type" : "string",
+   673→                    "optional" : False,
+   674→                    "description": "the title and artist of the track",
+   675→                },
+   676→            }
+   677→        },
+   678→        {
+   679→            "name" : "SimpleArtistFilter",
+   680→            "class": pbl.ArtistFilter,
+   681→            "type" : "filter",
+   682→            "display": "simple artist filter",
+   683→            "description": "removes tracks by the given artist",
+   684→
+   685→            "help" : """ This component will remove tracks from the input stream
+   686→            that are by the given set of artists. Artists are specified as a
+   687→            list of comma separated name.""",
+   688→
+   689→            "params": {
+   690→                "source": {
+   691→                    "type" : "port",
+   692→                    "optional" : False,
+   693→                    "port": "green",
+   694→                    "max_inputs": 1,
+   695→                    "description": "the source of the tracks",
+   696→                },
+   697→                "artistNames": {
+   698→                    "type" : "string_list",
+   699→                    "display" : "Artist name(s)",
+   700→                    "optional" : False,
+   701→                    "description": "a list of artist names",
+   702→                },
+   703→            }
+   704→        },
+   705→        {
+   706→            "name" : "ArtistTopTracks",
+   707→            "class": pbl.ArtistTopTracks,
+   708→            "type" : "source",
+   709→            "display": "artist top tracks",
+   710→            "description": "generates a series of top tracks by the given artist",
+   711→            "title" : "Top $name tracks",
+   712→
+   713→            "help" : """ This component will generate the top 10 tracks for the
+   714→            given artist.  You can specify the artist either by name or by URI.
+   715→            If both are given, the URI is used.""",
+   716→
+   717→            "params": {
+   718→                "name": {
+   719→                    "type" : "string",
+   720→                    "optional" : True,
+   721→                    "description": "the name of the artist",
+   722→                },
+   723→                "uri": {
+   724→                    "type" : "uri",
+   725→                    "optional" : True,
+   726→                    "description": "the uri of the artist",
+   727→                },
+   728→            }
+   729→        },
+   730→        {
+   731→            "name" : "EchoNestGenreRadio",
+   732→            "class": pbl.EchoNestGenreRadio,
+   733→            "type" : "source",
+   734→            'disabled': True,
+   735→            "display": "genre radio",
+   736→            "description": "generates a series of tracks in the given genre",
+   737→
+   738→            "help": """ This component will generate a stream of tracks given
+   739→            the Echo Nest genre. You can chose from a wide range of genres. Use
+   740→            <b> count </b> to control how many tracks are returned""",
+   741→
+   742→            "title" : "$genre",
+   743→            "params": {
+   744→                "genre": {
+   745→                    "type" : "genre",
+   746→                    "stype" : "string",
+   747→                    "optional" : False,
+   748→                    "default": "emo",
+   749→                    "description": "the genre of interest",
+   750→                },
+   751→                "count": {
+   752→                    "type" : "number",
+   753→                    "optional" : True,
+   754→                    "default" : 20,
+   755→                    "description": "The number of tracks to generate",
+   756→                },
+   757→            }
+   758→        },
+   759→        {
+   760→            "name" : "EchoNestArtistRadio",
+   761→            "class": pbl.EchoNestArtistRadio,
+   762→            'disabled': True,
+   763→            "type" : "source",
+   764→            "display": "artist radio",
+   765→
+   766→            "description": "tracks by the given artist and similar artists",
+   767→
+   768→            "help" : """ This component generates a stream of tracks by the
+   769→            given artist or similar artists. The <b>count</b> controls how many
+   770→            tracks are generated.""",
+   771→
+   772→            "title" : "$artist radio",
+   773→            "params": {
+   774→                "seed_artist_name_or_uri": {
+   775→                    "display" : "artist",
+   776→                    "type" : "string",
+   777→                    "optional" : False,
+   778→                    "description": "the seed artist",
+   779→                },
+   780→                "count": {
+   781→                    "type" : "number",
+   782→                    "optional" : True,
+   783→                    "default" : 20,
+   784→                    "description": "The number of tracks to generate",
+   785→                },
+   786→            }
+   787→        },
+   788→        {
+   789→            "name" : "SpotifyArtistRadio",
+   790→            "class": plugs.SpotifyArtistRadio,
+   791→            "type" : "source",
+   792→            "display": "artist radio",
+   793→
+   794→            "description": "tracks by the given artist and similar artists",
+   795→
+   796→            "help" : """ This component generates a stream of tracks by the
+   797→            given artist or similar artists """,
+   798→
+   799→            "title" : "$name radio",
+   800→            "help" : """ This component will generate a stream of track by
+   801→            the given artist and similar artists. You can specify the artist 
+   802→            either by name or by URI.  If both are given, the URI is used.""",
+   803→
+   804→            "params": {
+   805→                "name": {
+   806→                    "type" : "string",
+   807→                    "optional" : True,
+   808→                    "description": "the name of the artist",
+   809→                },
+   810→                "uri": {
+   811→                    "type" : "uri",
+   812→                    "optional" : True,
+   813→                    "description": "the uri of the artist",
+   814→                },
+   815→            }
+   816→        },
+   817→        {
+   818→            "name" : "EchoNestArtist",
+   819→            "class": pbl.EchoNestArtistPlaylist,
+   820→            "type" : "source",
+   821→            'disabled': True,
+   822→            "display": "artist tracks",
+   823→            "description": "tracks by the given artist",
+   824→
+   825→            "help" : """ This component generates a stream of tracks by the
+   826→            given artist. The <b>count</b> controls how many tracks are generated.
+   827→            The tracks returned will vary from run to run. More popular tracks
+   828→            by the artist are favored.""",
+   829→
+   830→            "title" : "$artist",
+   831→            "params": {
+   832→                "artist": {
+   833→                    "type" : "string",
+   834→                    "optional" : False,
+   835→                    "description": "the seed artist",
+   836→                },
+   837→                "count": {
+   838→                    "type" : "number",
+   839→                    "optional" : True,
+   840→                    "default" : 20,
+   841→                    "description": "The number of tracks to generate",
+   842→                },
+   843→            }
+   844→        },
+   845→        {
+   846→            "name" : "SpotifyPlaylist",
+   847→            "class": pbl.PlaylistSource,
+   848→            "type" : "source",
+   849→            "display": "playlist",
+   850→            "description": "loads tracks from the given spotify playlist",
+   851→
+   852→            "help" : """ This component will generate a stream of tracks from the given Spotify
+   853→            playlist.  If you specify a Spotify playlist <b>URI</b>, that playlist will
+   854→            be loaded. If you omit the URI but specify a <b>user</b> and a
+   855→            <b>name</b>, the user's public playlists will be searched for the playlist with the
+   856→            given name. If no user is specified, the most popular playlist with
+   857→            the given <b>name</b> will be used.
+   858→            """,
+   859→
+   860→            "title": "$name",
+   861→            "params": {
+   862→                "name": {
+   863→                    "type" : "string",
+   864→                    "optional" : False,
+   865→                    "description": "the name of the playlist",
+   866→                    "default" : "Your favorite coffeehouse"
+   867→                },
+   868→                "user": {
+   869→                    "type" : "string",
+   870→                    "optional" : True,
+   871→                    "description": "the owner of the playlist",
+   872→                },
+   873→                "uri": {
+   874→                    "type" : "string",
+   875→                    "optional" : True,
+   876→                    "description": "the uri of the playlist",
+   877→                },
+   878→            }
+   879→        },
+   880→        {
+   881→            "name" : "RelativeDatedSpotifyPlaylist",
+   882→            "class": plugs.RelativeDatedPlaylistSource,
+   883→            "type" : "source",
+   884→            "display": "playlist (rel date)",
+   885→            "description": "loads tracks from the given spotify playlist, potentially ordered and filtered by the relative track added date",
+   886→
+   887→            "help" : """ This component will generate a stream of tracks from the given Spotify
+   888→            playlist.  If you specify a Spotify playlist <b>URI</b>, that playlist will
+   889→            be loaded. If you omit the URI but specify a <b>user</b> and a
+   890→            <b>name</b>, the user's public playlists will be searched for the playlist with the
+   891→            given name. If no user is specified, the most popular playlist with
+   892→            the given <b>name</b> will be used.
+   893→            <p>
+   894→            By default tracks are generated in playlist order. If <b>Order by
+   895→            date added</b> is set, tracks are returned in order of the date they
+   896→            were added to the playlist.
+   897→            <p>
+   898→            By setting relative dates <b>tracks added before</b> and/or <b> tracks added since</b>
+   899→            you can restrict tracks generated to just those that were added in
+   900→            the given period. 
+   901→            <p> Examples of relative dates: 
+   902→            <ul>
+   903→                <li> 5 days
+   904→                <li> 1 year, 2 months and 3 days
+   905→                <li> last week
+   906→                <li> two weeks ago
+   907→            </ul> 
+   908→            More examples can be found on the <a href="about.html"> about
+   909→            page</a>
+   910→            """,
+   911→
+   912→            "title": "$name",
+   913→            "params": {
+   914→                "name": {
+   915→                    "type" : "string",
+   916→                    "optional" : False,
+   917→                    "description": "the name of the playlist",
+   918→                    "default" : "Your favorite coffeehouse"
+   919→                },
+   920→                "user": {
+   921→                    "type" : "string",
+   922→                    "optional" : True,
+   923→                    "description": "the owner of the playlist",
+   924→                },
+   925→                "uri": {
+   926→                    "type" : "string",
+   927→                    "optional" : True,
+   928→                    "description": "the uri of the playlist",
+   929→                },
+   930→                "order_by_date_added": {
+   931→                    "type" : "bool",
+   932→                    "optional" : True,
+   933→                    "default" : False,
+   934→                    "display": "Order by date added",
+   935→                    "description": "if true, tracks are ordered by the date added to the playlist",
+   936→                },
+   937→                "tracks_added_since": {
+   938→                    "type" : "string",
+   939→                    "display": "Include only tracks added since",
+   940→                    "optional" : True,
+   941→                    "default" : "",
+   942→                    "description": "If set, only tracks added since this relative date are generated",
+   943→                },
+   944→                "tracks_added_before": {
+   945→                    "type" : "string",
+   946→                    "display": "Include only tracks added before",
+   947→                    "optional" : True,
+   948→                    "default" : "",
+   949→                    "description": "If set, only tracks added before this relative date are generated",
+   950→                },
+   951→            }
+   952→        },
+   953→        {
+   954→            "name" : "DatedSpotifyPlaylist",
+   955→            "class": plugs.DatedPlaylistSource,
+   956→            "type" : "source",
+   957→            "display": "playlist (abs date)",
+   958→            "description": "loads tracks from the given spotify playlist, potentially ordered and filtered by the absolute track added date",
+   959→
+   960→            "help" : """ This component will generate a stream of tracks from the given Spotify
+   961→            playlist.  If you specify a Spotify playlist <b>URI</b>, that playlist will
+   962→            be loaded. If you omit the URI but specify a <b>user</b> and a
+   963→            <b>name</b>, the user's public playlists will be searched for the playlist with the
+   964→            given name. If no user is specified, the most popular playlist with
+   965→            the given <b>name</b> will be used.
+   966→            <p>
+   967→            By default tracks are generated in playlist order. If <b>Order by
+   968→            date added</b> is set, tracks are returned in order of the date they
+   969→            were added to the playlist.
+   970→            <p>
+   971→            By setting <b>tracks added before</b> and/or <b> tracks added since</b>
+   972→            you can restrict tracks generated to just those that were added in
+   973→            the given period. 
+   974→            """,
+   975→
+   976→            "title": "$name",
+   977→            "params": {
+   978→                "name": {
+   979→                    "type" : "string",
+   980→                    "optional" : False,
+   981→                    "description": "the name of the playlist",
+   982→                    "default" : "Your favorite coffeehouse"
+   983→                },
+   984→                "user": {
+   985→                    "type" : "string",
+   986→                    "optional" : True,
+   987→                    "description": "the owner of the playlist",
+   988→                },
+   989→                "uri": {
+   990→                    "type" : "string",
+   991→                    "optional" : True,
+   992→                    "description": "the uri of the playlist",
+   993→                },
+   994→                "order_by_date_added": {
+   995→                    "type" : "bool",
+   996→                    "optional" : True,
+   997→                    "default" : False,
+   998→                    "display": "Order by date added",
+   999→                    "description": "if true, tracks are ordered by the date added to the playlist",
+  1000→                },
+  1001→                "tracks_added_since": {
+  1002→                    "type" : "optional_date",
+  1003→                    "display": "Include only tracks added since",
+  1004→                    "optional" : True,
+  1005→                    "default" : -1,
+  1006→                    "description": "If set, only tracks added since this date are generated",
+  1007→                },
+  1008→                "tracks_added_before": {
+  1009→                    "type" : "optional_date",
+  1010→                    "display": "Include only tracks added before",
+  1011→                    "optional" : True,
+  1012→                    "default" : -1,
+  1013→                    "description": "If set, only tracks added before this date are generated",
+  1014→                },
+  1015→            }
+  1016→        },
+  1017→        {
+  1018→            "name" : "MySavedAlbums",
+  1019→            "class": plugs.MySavedAlbums,
+  1020→            "type" : "source",
+  1021→            "display": "my saved albums",
+  1022→            "description": "produces a list of tracks from the current user's saved albums",
+  1023→
+  1024→            "help" : """ This component will generate a stream of tracks from the
+  1025→            current user's saved albums.
+  1026→            <br>
+  1027→            <span class="label label-warning"> Warning </span> This component may fail if you have a large number
+  1028→            of saved albums.  Someday, this will be fixed.
+  1029→            """,
+  1030→            "title": "My Saved albums",
+  1031→            "params": { }
+  1032→        },
+  1033→        {
+  1034→            "name" : "MySavedTracks",
+  1035→            "class": plugs.MySavedTracks,
+  1036→            "type" : "source",
+  1037→            "display": "my saved tracks",
+  1038→            "description": "produces a list of the current user's saved tracks",
+  1039→
+  1040→            "help" : """ This component will generate a stream of tracks from the
+  1041→            current user's saved tracks
+  1042→            <br>
+  1043→            <span class="label label-warning"> Warning </span> This component may fail if you have a large number
+  1044→            of saved tracks.  Someday, this will be fixed.
+  1045→            """,
+  1046→            "title": "My Saved tracks",
+  1047→            "params": { }
+  1048→        },
+  1049→        {
+  1050→            "name" : "MyTopTracks",
+  1051→            "class": plugs.MyTopTracks,
+  1052→            "type" : "source",
+  1053→            "display": "my top tracks",
+  1054→            "description": "produces a list of the current user's recent top tracks",
+  1055→
+  1056→            "help" : """ This component will generate a stream of your
+  1057→            most listened to tracks from your listening history.  
+  1058→            The top tracks are available over three time spans: 
+  1059→            <ul>
+  1060→                <li><b>short term</b> - the last month or so </li>
+  1061→                <li><b>medium term</b> - the last half year or so </li>
+  1062→                <li><b>long term</b> - the last several years </li>
+  1063→            </ul>
+  1064→            """,
+  1065→            "title": "My $time_range Top tracks",
+  1066→            "params": { 
+  1067→                "time_range" : {
+  1068→                    "type": "time_range",
+  1069→                    "optional": True,
+  1070→                    "default": "medium_term",
+  1071→                    "description": "the time period of interest",
+  1072→                    "display": "time range"
+  1073→                }
+  1074→            }
+  1075→        },
+  1076→        {
+  1077→            "name" : "MyFollowedArtists",
+  1078→            "class": plugs.MyFollowedArtists,
+  1079→            "type" : "source",
+  1080→            "display": "followed artists",
+  1081→            "description": "produces a list tracks by the current user's followed artists",
+  1082→
+  1083→            "help" : """ This component will generate a stream of tracks from the
+  1084→            current user's saved tracks
+  1085→            """,
+  1086→            "title": "top tracks by my followed artists",
+  1087→            "params": {
+  1088→                "num_tracks": {
+  1089→                    "type" : "number",
+  1090→                    "optional" : True,
+  1091→                    "default" : 1,
+  1092→                    "description": "The number of tracks per artist to generate",
+  1093→                }
+  1094→            }
+  1095→        },
+  1096→        {
+  1097→            "name" : "First",
+  1098→            "class": pbl.First,
+  1099→            "type" : "selector",
+  1100→            "title" : "first $sample_size",
+  1101→            "display": "first",
+  1102→            "description": "Returns the first tracks from a stream",
+  1103→
+  1104→            "help": """ This filter will only pass through the first <b> count
+  1105→            </b> tracks through. Use this filter to limit the tracks to just the
+  1106→            first <b>count</b> tracks""",
+  1107→
+  1108→            "params": {
+  1109→                "source": {
+  1110→                    "type" : "port",
+  1111→                    "optional" : False,
+  1112→                    "port": "green",
+  1113→                    "max_inputs": 1,
+  1114→                    "description": "the source of the tracks",
+  1115→                },
+  1116→                "sample_size": {
+  1117→                    "display": "count",
+  1118→                    "type" : "number",
+  1119→                    "default" : 10,
+  1120→                    "optional" : False,
+  1121→                    "description": "the number of tracks to return"
+  1122→                }
+  1123→            }
+  1124→        },
+  1125→
+  1126→        {
+  1127→            "name" : "PlaylistSave",
+  1128→            "class": plugs.PlaylistSave,
+  1129→            "type" : "misc",
+  1130→            "title" : "save to $playlist_name",
+  1131→            "display": "save to Spotify",
+  1132→            "description": "save the tracks to a spotify playlist",
+  1133→
+  1134→            "help": """ This filter will save all the tracks that pass through
+  1135→            it to the Spotify playlist. If a playlist uri is given, it will
+  1136→            be used, otherwise, if a playlist with the given name
+  1137→            already exists it will be written to. If no playlist with the given
+  1138→            name exists, it will be created.  If the <b> append </b> flag is
+  1139→            set, the tracks will be appended to the playlist
+  1140→            """,
+  1141→
+  1142→            "params": {
+  1143→                "source": {
+  1144→                    "type" : "port",
+  1145→                    "optional" : False,
+  1146→                    "port": "green",
+  1147→                    "max_inputs": 1,
+  1148→                    "description": "the source of the tracks",
+  1149→                },
+  1150→                "playlist_name": {
+  1151→                    "display": "name",
+  1152→                    "type" : "string",
+  1153→                    "default" : "My Smarter Playlist",
+  1154→                    "optional" : True,
+  1155→                    "description": "the name of the playlist"
+  1156→                },
+  1157→                "playlist_uri": {
+  1158→                    "display": "uri",
+  1159→                    "type" : "uri",
+  1160→                    "optional" : True,
+  1161→                    "description": "the uri of the playlist"
+  1162→                },
+  1163→                "append": {
+  1164→                    "display": "append",
+  1165→                    "type" : "bool",
+  1166→                    "default" : False,
+  1167→                    "optional" : True,
+  1168→                    "description": "if true, append tracks to the playlist"
+  1169→                }
+  1170→            }
+  1171→        },
+  1172→
+  1173→        {
+  1174→            "name" : "PlaylistSaveToNew",
+  1175→            "class": plugs.PlaylistSaveToNew,
+  1176→            "type" : "misc",
+  1177→            "title" : "save to new playlist",
+  1178→            "display": "save to new playlist",
+  1179→            "description": "save the tracks to a new Spotify playlist with an optional automatically supplied suffix",
+  1180→
+  1181→            "help": """ This filter will save all the tracks that pass through
+  1182→            it to the Spotify playlist. A new playlist will always be created.
+  1183→            Specify a suffix type to automatically vary the playlist name with
+  1184→            the date, time, day of the week, or the day of the month. """,
+  1185→
+  1186→            "params": {
+  1187→                "source": {
+  1188→                    "type" : "port",
+  1189→                    "optional" : False,
+  1190→                    "port": "green",
+  1191→                    "max_inputs": 1,
+  1192→                    "description": "the source of the tracks",
+  1193→                },
+  1194→                "playlist_name": {
+  1195→                    "display": "name",
+  1196→                    "type" : "string",
+  1197→                    "default" : "My Smarter Playlist",
+  1198→                    "optional" : True,
+  1199→                    "description": "the name of the playlist"
+  1200→                },
+  1201→                "suffix_type": {
+  1202→                    "display": "suffix_type",
+  1203→                    "type" : "playlist_suffix",
+  1204→                    "default" : "time",
+  1205→                    "optional" : True,
+  1206→                    "description": "type of suffix automatically applied to the playlist name"
+  1207→                },
+  1208→            }
+  1209→        },
+  1210→
+  1211→        {
+  1212→            "name" : "AllButTheFirst",
+  1213→            "class": plugs.AllButTheFirst,
+  1214→            "type" : "selector",
+  1215→            "title" : "all but the first $sample_size",
+  1216→            "display": "all but the first",
+  1217→            "description": "Returns all but the first tracks from a stream",
+  1218→
+  1219→            "help": """ This filter will only pass through all but the first <b> count
+  1220→            </b> tracks through. Use this filter to limit the tracks to all but the
+  1221→            first <b>count</b> tracks""",
+  1222→
+  1223→            "params": {
+  1224→                "source": {
+  1225→                    "type" : "port",
+  1226→                    "optional" : False,
+  1227→                    "port": "green",
+  1228→                    "max_inputs": 1,
+  1229→                    "description": "the source of the tracks",
+  1230→                },
+  1231→                "sample_size": {
+  1232→                    "display": "count",
+  1233→                    "type" : "number",
+  1234→                    "default" : 10,
+  1235→                    "optional" : False,
+  1236→                    "description": "the number of tracks to return"
+  1237→                }
+  1238→            }
+  1239→        },
+  1240→        {
+  1241→            "name" : "AllButTheLast",
+  1242→            "class": plugs.AllButTheLast,
+  1243→            "type" : "selector",
+  1244→            "title" : "all but the last $sample_size",
+  1245→            "display": "all but the last",
+  1246→            "description": "Returns all but the last tracks from a stream",
+  1247→
+  1248→            "help": """ This filter will only pass through all but the last <b> count
+  1249→            </b> tracks through. Use this filter to limit the tracks to all but the
+  1250→            last <b>count</b> tracks""",
+  1251→
+  1252→            "params": {
+  1253→                "source": {
+  1254→                    "type" : "port",
+  1255→                    "optional" : False,
+  1256→                    "port": "green",
+  1257→                    "max_inputs": 1,
+  1258→                    "description": "the source of the tracks",
+  1259→                },
+  1260→                "sample_size": {
+  1261→                    "display": "count",
+  1262→                    "type" : "number",
+  1263→                    "default" : 10,
+  1264→                    "optional" : False,
+  1265→                    "description": "the number of tracks to return"
+  1266→                }
+  1267→            }
+  1268→        },
+  1269→        {
+  1270→            "name" : "Last",
+  1271→            "class": pbl.Last,
+  1272→            "type" : "selector",
+  1273→            "title" : "last $sample_size",
+  1274→            "display" : "last",
+  1275→            "description": "Returns the last tracks from a stream",
+  1276→
+  1277→            "help" : """ This component returns the last <b> count </b> number of
+  1278→            tracks on the input stream""",
+  1279→
+  1280→            "params": {
+  1281→                "source": {
+  1282→                    "type" : "port",
+  1283→                    "optional" : False,
+  1284→                    "port": "green",
+  1285→                    "max_inputs": 1,
+  1286→                    "description": "the source of the tracks",
+  1287→                },
+  1288→                "sample_size": {
+  1289→                    "display" : "count",
+  1290→                    "type" : "number",
+  1291→                    "optional" : False,
+  1292→                    "default" : 10,
+  1293→                    "description": "the number of tracks to return"
+  1294→                }
+  1295→            }
+  1296→        },
+  1297→
+  1298→        {
+  1299→            "name" : "Sample",
+  1300→            "class": pbl.Sample,
+  1301→            "type" : "selector",
+  1302→            "display" : "sample",
+  1303→            "title" : "sample $sample_size tracks",
+  1304→            "description": "randomly sample tracks from the stream",
+  1305→
+  1306→            "help" : """ This component will randomly sample up to <b> count </b>
+  1307→            tracks from the input stream. Sampled tracks may be returned in any
+  1308→            order""",
+  1309→
+  1310→            "params": {
+  1311→                "source": {
+  1312→                    "type" : "port",
+  1313→                    "optional" : False,
+  1314→                    "port": "green",
+  1315→                    "max_inputs": 1,
+  1316→                    "description": "the source of the tracks",
+  1317→                },
+  1318→                "sample_size": {
+  1319→                    "type" : "number",
+  1320→                    "optional" : False,
+  1321→                    "description": "the number of tracks to return",
+  1322→                    "display" : "count",
+  1323→                    "default" : 10,
+  1324→                }
+  1325→            }
+  1326→        },
+  1327→        {
+  1328→            "name" : "ShorterThan",
+  1329→            "class": pbl.ShorterThan,
+  1330→            "type" : "selector",
+  1331→            "title" : "no longer than $time",
+  1332→            "display" : "no longer than",
+  1333→            "description": "Limit the stream, if possible, to tracks with " \
+  1334→                "a duration that is no longer than the given time",
+  1335→
+  1336→            "help" : """ This component will limit the stream of tracks to the
+  1337→            first N tracks that have a total duration that is shorter than the
+  1338→            given time.  The time is given in the form mm:ss or hh:mm:ss or just
+  1339→            seconds""",
+  1340→
+  1341→            "params": {
+  1342→                "source": {
+  1343→                    "type" : "port",
+  1344→                    "optional" : False,
+  1345→                    "port": "green",
+  1346→                    "max_inputs": 1,
+  1347→                    "description": "the source of the tracks",
+  1348→                },
+  1349→                "time": {
+  1350→                    "type" : "time",
+  1351→                    "default" : 900,
+  1352→                    "optional" : False,
+  1353→                    "description": "the length in the form hh:mm:ss of the stream of tracks"
+  1354→                }
+  1355→            }
+  1356→        },
+  1357→
+  1358→        {
+  1359→            "name" : "LongerThan",
+  1360→            "class": pbl.LongerThan,
+  1361→            "type" : "selector",
+  1362→            "title" : "no shorter than $time",
+  1363→            "display" : "no shorter than",
+  1364→            "description": "Limit the stream, if possible, to tracks with " + \
+  1365→                "a duration that is no shorter than the given time",
+  1366→
+  1367→            "help" : """ This component will limit the stream of tracks to the
+  1368→            first N tracks that have a total duration that is longer than the
+  1369→            given time.  The time is given in the form mm:ss or hh:mm:ss or just
+  1370→            seconds""",
+  1371→
+  1372→            "params": {
+  1373→                "source": {
+  1374→                    "type" : "port",
+  1375→                    "optional" : False,
+  1376→                    "port": "green",
+  1377→                    "max_inputs": 1,
+  1378→                    "description": "the source of the tracks",
+  1379→                },
+  1380→                "time": {
+  1381→                    "type" : "time",
+  1382→                    "optional" : False,
+  1383→                    "default" :  1800,
+  1384→                    "format" : "time",
+  1385→                    "description": "the length in the form hh:mm:ss of the stream of tracks"
+  1386→                }
+  1387→            }
+  1388→        },
+  1389→        {
+  1390→            "name" : "Shuffler",
+  1391→            "class": pbl.Shuffler,
+  1392→            "type" : "order",
+  1393→            "title" : "shuffle",
+  1394→            "display" : "shuffle",
+  1395→            "description": "Shuffles the tracks in the stream",
+  1396→
+  1397→            "help" : """
+  1398→                This component will randomly re-order the input tracks """,
+  1399→
+  1400→            "params": {
+  1401→                "source": {
+  1402→                    "type" : "port",
+  1403→                    "optional" : False,
+  1404→                    "port": "green",
+  1405→                    "max_inputs": 1,
+  1406→                    "description": "the source of the tracks",
+  1407→                },
+  1408→            }
+  1409→        },
+  1410→        {
+  1411→            "name" : "Weighted Shuffler",
+  1412→            "class": plugs.WeightedShuffler,
+  1413→            "type" : "order",
+  1414→            "title" : "Weighted shuffle",
+  1415→            "display" : "Weighted shuffle",
+  1416→            "description": "performs a weighted shuffle of  the tracks in the stream",
+  1417→
+  1418→            "help" : """
+  1419→                This component will randomly re-order the input tracks. The
+  1420→                amount of re-ordering is controlled by an 
+  1421→                <b>amount of randomness</b> factor. This factor
+  1422→                is a number between zero and one. The closer the factor is to
+  1423→                one, the more random the resulting track order, while the closer
+  1424→                the factor is to zero, the more the original track order is
+  1425→                retained.  A factor of .1 will lightly shuffle the input tracks""",
+  1426→            "params": {
+  1427→                "source": {
+  1428→                    "type" : "port",
+  1429→                    "optional" : False,
+  1430→                    "port": "green",
+  1431→                    "max_inputs": 1,
+  1432→                    "description": "the source of the tracks",
+  1433→                },
+  1434→                "factor": {
+  1435→                    "display" : "amount of randomness",
+  1436→                    "type" : "number",
+  1437→                    "optional" : False,
+  1438→                    "default": .1,
+  1439→                    "description": "controls the amount of randomness used in shuffling the tracks"
+  1440→                },
+  1441→            }
+  1442→        },
+  1443→        {
+  1444→            "name" : "SeparateArtists",
+  1445→            "class": plugs.SeparateArtists,
+  1446→            "type" : "order",
+  1447→            "title" : "separate artists",
+  1448→            "display" : "separate artists",
+  1449→            "description": "minimizes the number of adjacent songs by the same artist",
+  1450→
+  1451→            "help" : """
+  1452→                This component will re-order the input tracks such that the
+  1453→                number of adjacent tracks with the same artist is minimized""",
+  1454→
+  1455→            "params": {
+  1456→                "source": {
+  1457→                    "type" : "port",
+  1458→                    "optional" : False,
+  1459→                    "port": "green",
+  1460→                    "max_inputs": 1,
+  1461→                    "description": "the source of the tracks",
+  1462→                },
+  1463→            }
+  1464→        },
+  1465→        {
+  1466→            "name" : "MixIn",
+  1467→            "class": plugs.MixIn,
+  1468→            "display" : "mix in",
+  1469→            "title": "mix in",
+  1470→            "type" : "combiner",
+  1471→            "description": "mix two input streams",
+  1472→
+  1473→            "help": """ This component allows for more sophisticatd mixing of two
+  1474→            streams. Tracks are alternately selected from the red and the green
+  1475→            streams based upon the settings """,
+  1476→
+  1477→            "params": {
+  1478→                "true_source": {
+  1479→                    "type" : "port",
+  1480→                    "optional" : False,
+  1481→                    "port": "green",
+  1482→                    "max_inputs" : 1,
+  1483→                    "description": "the primary source of tracks ",
+  1484→                },
+  1485→                "false_source": {
+  1486→                    "type" : "port",
+  1487→                    "optional" : False,
+  1488→                    "port": "red",
+  1489→                    "max_inputs" : 1,
+  1490→                    "description": "the mixin source of tracks",
+  1491→                },
+  1492→                "fail_fast": {
+  1493→                    "type" : "bool",
+  1494→                    "optional" : True,
+  1495→                    "default" : True,
+  1496→                    "display" : "fail fast",
+  1497→                    "description": "if true stop producing tracks "
+  1498→                        + "as soon as any input stops producing tracks"
+  1499→                },
+  1500→
+  1501→                "ntracks": {
+  1502→                    "type" : "number",
+  1503→                    "display" : "# red tracks in a row",
+  1504→                    "optional" : False,
+  1505→                    "default" : 1,
+  1506→                    "description": "the number of red tracks in a row"
+  1507→                },
+  1508→                "nskips": {
+  1509→                    "type" : "number",
+  1510→                    "display" : "# green tracks in a row",
+  1511→                    "optional" : False,
+  1512→                    "default" : 1,
+  1513→                    "description": "the number of green tracks in a row"
+  1514→                },
+  1515→                "initial_skip": {
+  1516→                    "type" : "number",
+  1517→                    "display" : "initial number of green tracks",
+  1518→                    "default" : 1,
+  1519→                    "optional" : False,
+  1520→                    "description": "the initial number of green tracks"
+  1521→                }
+  1522→            }
+  1523→        },
+  1524→        {
+  1525→            "name" : "Reverse",
+  1526→            "class": pbl.Reverse,
+  1527→            "type" : "order",
+  1528→            "title" : "reverse",
+  1529→            "display" : "reverse",
+  1530→            "description": "Reverses the order of the tracks in the stream",
+  1531→
+  1532→            "help" : """ This component will reverse the order of the input tracks """,
+  1533→
+  1534→            "params": {
+  1535→                "source": {
+  1536→                    "type" : "port",
+  1537→                    "optional" : False,
+  1538→                    "port": "green",
+  1539→                    "max_inputs": 1,
+  1540→                    "description": "the source of the tracks",
+  1541→                },
+  1542→            }
+  1543→        },
+  1544→        {
+  1545→            "name" : "Sorter",
+  1546→            "class": pbl.Sorter,
+  1547→            "type" : "order",
+  1548→            "title": "sort by $reverse $attr",
+  1549→            "display" : "sort",
+  1550→            "description": "Sorts the tracks in the stream by the given attribute",
+  1551→
+  1552→            "help" : """ This component will order the tracks based upon the
+  1553→            given attribute. The sort can be reversed by selected the <b>
+  1554→            reverse </b> option.""",
+  1555→
+  1556→            "params": {
+  1557→                "source": {
+  1558→                    "type" : "port",
+  1559→                    "optional" : False,
+  1560→                    "port": "green",
+  1561→                    "max_inputs": 1,
+  1562→                    "description": "the source of the tracks",
+  1563→                },
+  1564→                "attr": {
+  1565→                    "type" : "sort_attributes",
+  1566→                    "default" : "title",
+  1567→                    "optional" : False,
+  1568→                    "description": "the attribute to be sorted on"
+  1569→                },
+  1570→
+  1571→                "reverse": {
+  1572→                    "type" : "bool",
+  1573→                    "optional" : True,
+  1574→                    "description": "if true, reverse the sort"
+  1575→                },
+  1576→            }
+  1577→        },
+  1578→        {
+  1579→            "name" : "Alternate",
+  1580→            "class": pbl.Alternate,
+  1581→            "type" : "combiner",
+  1582→            "display" : "alternate",
+  1583→            "description": "alternate tracks from multiple streams",
+  1584→
+  1585→            "help" : """ This component takes any number of input streams and
+  1586→            generates a single output stream by alternating between each of the
+  1587→            input streams.  If <b> fail fast </b> is set, this component will
+  1588→            stop producing any tracks once any input stream stops producing
+  1589→            tracks. If <b>fail fast</b> is not set, this component will continue
+  1590→            to generate tracks until all input sources are exhausted.""",
+  1591→
+  1592→            "params": {
+  1593→                "source_list": {
+  1594→                    "type" : "port",
+  1595→                    "port": "green",
+  1596→                    "max_inputs": "20",
+  1597→                    "description": "the list of sources"
+  1598→                },
+  1599→                "fail_fast": {
+  1600→                    "type" : "bool",
+  1601→                    "optional" : True,
+  1602→                    "default" : True,
+  1603→                    "display" : "fail fast",
+  1604→                    "description": "if true stop producing tracks "
+  1605→                        + "as soon as any input stops producing tracks"
+  1606→                },
+  1607→            }
+  1608→        },
+  1609→        {
+  1610→            "name" : "RandomSelector",
+  1611→            "class": plugs.RandomSelector,
+  1612→            "type" : "combiner",
+  1613→            "display" : "random",
+  1614→            "description": "randomly selects tracks from multiple streams",
+  1615→
+  1616→            "help" : """This component takes any number of input streams and
+  1617→            produces tracks by continuosly selecting a random input stream and
+  1618→            returning the next track from that stream. If <b> fail fast </b> is
+  1619→            set, this component will stop generating tracks as soon as any of
+  1620→            its randomly selected sources stops generating tracks.""",
+  1621→
+  1622→            "params": {
+  1623→                "source_list": {
+  1624→                    "type" : "port",
+  1625→                    "port": "green",
+  1626→                    "max_inputs": "20",
+  1627→                    "description": "the list of sources"
+  1628→                },
+  1629→                "fail_fast": {
+  1630→                    "type" : "bool",
+  1631→                    "optional" : True,
+  1632→                    "default" : True,
+  1633→                    "display" : "fail fast",
+  1634→                    "description": "if true stop producing tracks "
+  1635→                        + "as soon as any input stops producing tracks"
+  1636→                },
+  1637→            }
+  1638→        },
+  1639→
+  1640→        {
+  1641→            "name" : "RandomStreamSelector",
+  1642→            "class": plugs.RandomStreamSelector,
+  1643→
+  1644→            "help" : """This component will pick one input stream at random and
+  1645→            use that stream to produce tracks""",
+  1646→
+  1647→            "type" : "combiner",
+  1648→            "display" : "random stream",
+  1649→            "description": "randomly selects a stream",
+  1650→            "params": {
+  1651→                "source_list": {
+  1652→                    "type" : "port",
+  1653→                    "port": "green",
+  1654→                    "max_inputs": "20",
+  1655→                    "description": "the list of sources"
+  1656→                },
+  1657→            }
+  1658→        },
+  1659→        {
+  1660→            "name" : "Concatenate",
+  1661→            "class": pbl.Concatenate,
+  1662→            "display" : "concatenate",
+  1663→            "type" : "combiner",
+  1664→            "description": "Concatenate tracks from multiple streams",
+  1665→
+  1666→            "help" : """ This component takes any number of input streams and
+  1667→            produces tracks by retrieving all the tracks from the first stream,
+  1668→            followed by all the tracks from the second stream and so on.""",
+  1669→
+  1670→            "params": {
+  1671→                "source_list": {
+  1672→                    "type" : "port",
+  1673→                    "port": "green",
+  1674→                    "max_inputs": "20",
+  1675→                    "description": "the list of sources"
+  1676→                },
+  1677→            }
+  1678→        },
+  1679→        {
+  1680→            "name" : "AttributeRangeFilter",
+  1681→            "class": pbl.AttributeRangeFilter,
+  1682→            "type" : "filter",
+  1683→            "description": "filter tracks by an attribute",
+  1684→            "title": "filter $attr",
+  1685→            "display" : "range filter",
+  1686→
+  1687→            "help" : """ This component will filter the input stream and only
+  1688→            pass through tracks that have an attribute that passes the range
+  1689→            filter.""",
+  1690→
+  1691→            "params": {
+  1692→                "source": {
+  1693→                    "type" : "port",
+  1694→                    "optional" : False,
+  1695→                    "port": "green",
+  1696→                    "max_inputs": 1,
+  1697→                    "description": "the source of the tracks",
+  1698→                },
+  1699→                "attr": {
+  1700→                    "type" : "range_attributes",
+  1701→                    "optional" : False,
+  1702→                    "description": "the attribute to be sorted on"
+  1703→                },
+  1704→
+  1705→                "match": {
+  1706→                    "type" : "any",
+  1707→                    "optional" : True,
+  1708→                    "description": "if not empty, attribute must match this exactly"
+  1709→                },
+  1710→
+  1711→                "min_val": {
+  1712→                    "type" : "number",
+  1713→                    "optional" : True,
+  1714→                    "display" : "min value",
+  1715→                    "description": "if not empty attribute value must be at least this"
+  1716→                },
+  1717→                "max_val": {
+  1718→                    "type" : "number",
+  1719→                    "optional" : True,
+  1720→                    "display" : "max value",
+  1721→                    "description": "if not empty attribute value must be less than this"
+  1722→                }
+  1723→            }
+  1724→        },
+  1725→        {
+  1726→            "name" : "ReleaseDateFilter",
+  1727→            "class": plugs.ReleaseDateFilter,
+  1728→            "type" : "filter",
+  1729→            "description": "filter tracks by the date of release",
+  1730→            "title": "released between $min_val and $max_val",
+  1731→            "display" : "date filter",
+  1732→
+  1733→            "help" : """ This component will filter the input stream and only
+  1734→            pass through tracks that have a release date within the specified
+  1735→            range""",
+  1736→
+  1737→            "params": {
+  1738→                "source": {
+  1739→                    "type" : "port",
+  1740→                    "optional" : False,
+  1741→                    "port": "green",
+  1742→                    "max_inputs": 1,
+  1743→                    "description": "the source of the tracks",
+  1744→                },
+  1745→                "min_val": {
+  1746→                    "type" : "string",
+  1747→                    "optional" : True,
+  1748→                    "display" : "Earliest Date",
+  1749→                    "default" : "1935-01-08",
+  1750→                    "description": "tracks must be released no earlier than this date"
+  1751→                },
+  1752→                "max_val": {
+  1753→                    "type" : "string",
+  1754→                    "optional" : True,
+  1755→                    "display" : "Latest date",
+  1756→                    "default" : datetime.datetime.now().strftime("%Y-%m-%d"),
+  1757→                    "description": "tracks must be released no later than this date"
+  1758→                }
+  1759→            }
+  1760→        },
+  1761→        {
+  1762→            "name" : "Danceable",
+  1763→            "class": plugs.Danceable,
+  1764→            "type" : "filter",
+  1765→            "title" : "$scale danceable",
+  1766→            "display": "danceable",
+  1767→            "description": "filters tracks by their danceability attribute",
+  1768→
+  1769→            "help" : """ This component will pass through tracks that meet
+  1770→            the given danceability scale.""",
+  1771→
+  1772→            "params": {
+  1773→                "source": {
+  1774→                    "type" : "port",
+  1775→                    "optional" : False,
+  1776→                    "port": "green",
+  1777→                    "max_inputs": 1,
+  1778→                    "description": "the source of the tracks",
+  1779→                },
+  1780→                "scale": {
+  1781→                    "type" : "scale",
+  1782→                    "optional" : False,
+  1783→                    "default" : 0,
+  1784→                    "stype" : "number",
+  1785→                    "description": "how danceble are the desired tracks"
+  1786→                }
+  1787→            }
+  1788→        },
+  1789→        {
+  1790→            "name" : "Energy",
+  1791→            "class": plugs.Energy,
+  1792→            "type" : "filter",
+  1793→            "title" : "$scale energy",
+  1794→            "display": "energy",
+  1795→            "description": "filters tracks by their energy attribute",
+  1796→
+  1797→            "help" : """ This component will pass through tracks that meet
+  1798→            the given energy scale.""",
+  1799→
+  1800→            "params": {
+  1801→                "source": {
+  1802→                    "type" : "port",
+  1803→                    "optional" : False,
+  1804→                    "port": "green",
+  1805→                    "max_inputs": 1,
+  1806→                    "description": "the source of the tracks",
+  1807→                },
+  1808→                "scale": {
+  1809→                    "type" : "scale",
+  1810→                    "optional" : False,
+  1811→                    "default" : 0,
+  1812→                    "stype" : "number",
+  1813→                    "description": "how energetic are the desired tracks"
+  1814→                }
+  1815→            }
+  1816→        },
+  1817→        {
+  1818→            "name" : "Explicit",
+  1819→            "class": plugs.Explicit,
+  1820→            "type" : "filter",
+  1821→            "title" : "$!!explicit",
+  1822→            "display": "explicit",
+  1823→            "description": "filters tracks by their explicit attribute",
+  1824→
+  1825→            "help" : """ This component will pass through tracks that match
+  1826→            the given explicit criteria.""",
+  1827→
+  1828→            "params": {
+  1829→                "source": {
+  1830→                    "type" : "port",
+  1831→                    "optional" : False,
+  1832→                    "port": "green",
+  1833→                    "max_inputs": 1,
+  1834→                    "description": "the source of the tracks",
+  1835→                },
+  1836→                "explicit": {
+  1837→                    "type" : "bool",
+  1838→                    "default" : False,
+  1839→                    "optional" : True,
+  1840→                    "description": """if true, only explicit tracks are passed
+  1841→                    through, if false no explicit tracks are passed through"""
+  1842→                }
+  1843→            }
+  1844→        },
+  1845→        {
+  1846→            "name" : "Live",
+  1847→            "class": plugs.Live,
+  1848→            "type" : "filter",
+  1849→            "title" : "$scale live",
+  1850→            "display": "live",
+  1851→            "description": "filters tracks by their liveness attribute",
+  1852→
+  1853→            "help" : """ This component will pass through tracks that meet
+  1854→            the given liveness scale.""",
+  1855→
+  1856→            "params": {
+  1857→                "source": {
+  1858→                    "type" : "port",
+  1859→                    "optional" : False,
+  1860→                    "port": "green",
+  1861→                    "max_inputs": 1,
+  1862→                    "description": "the source of the tracks",
+  1863→                },
+  1864→                "scale": {
+  1865→                    "type" : "scale",
+  1866→                    "optional" : False,
+  1867→                    "default" : 0,
+  1868→                    "stype" : "number",
+  1869→                    "description": "how live are the desired tracks"
+  1870→                }
+  1871→            }
+  1872→        },
+  1873→        {
+  1874→            "name" : "TextFilter",
+  1875→            "class": plugs.TextFilter,
+  1876→            "type" : "filter",
+  1877→            "title" : "title $?invert:not-matching:matching  $text",
+  1878→            "display": "title filter",
+  1879→            "description": "filters tracks with titles that match a given string",
+  1880→
+  1881→            "help" : """ This component will pass through tracks that have
+  1882→            a title that matches the given text string.  The sense of the filter
+  1883→            can be inverted by settting the <b>invert</b> parameter. To ignore
+  1884→            case when matching set the  <b>ignore case</b> flag.  Note that
+  1885→            the matching text is a <a
+  1886→            href="http://www.regular-expressions.info">regular expression</a>
+  1887→            allowing for very sophisticated matching logic.""",
+  1888→
+  1889→            "params": {
+  1890→                "source": {
+  1891→                    "type" : "port",
+  1892→                    "optional" : False,
+  1893→                    "port": "green",
+  1894→                    "max_inputs": 1,
+  1895→                    "description": "the source of the tracks",
+  1896→                },
+  1897→                "text": {
+  1898→                    "type" : "string",
+  1899→                    "optional" : False,
+  1900→                    "display": "match",
+  1901→                    "default" : "",
+  1902→                    "description": "regular expression to match track title"
+  1903→                },
+  1904→                "ignore_case": {
+  1905→                    "type" : "bool",
+  1906→                    "optional" : False,
+  1907→                    "display": "ignore case",
+  1908→                    "default" : True,
+  1909→                    "description": "if true, matches ignore letter case"
+  1910→                },
+  1911→                "invert": {
+  1912→                    "type" : "bool",
+  1913→                    "optional" : False,
+  1914→                    "default" : False,
+  1915→                    "description": "if true, the filter is reversed"
+  1916→                }
+  1917→            }
+  1918→        },
+  1919→        {
+  1920→            "name" : "Spoken Word",
+  1921→            "class": plugs.SpokenWord,
+  1922→            "type" : "filter",
+  1923→            "title" : "$scale spoken word",
+  1924→            "display": "spoken word",
+  1925→            "description": "filters tracks by their speechiness attribute",
+  1926→
+  1927→            "help" : """ This component will pass through tracks that meet
+  1928→            the given speechiness scale.""",
+  1929→
+  1930→            "params": {
+  1931→                "source": {
+  1932→                    "type" : "port",
+  1933→                    "optional" : False,
+  1934→                    "port": "green",
+  1935→                    "max_inputs": 1,
+  1936→                    "description": "the source of the tracks",
+  1937→                },
+  1938→                "scale": {
+  1939→                    "type" : "scale",
+  1940→                    "optional" : False,
+  1941→                    "default" : 0,
+  1942→                    "stype" : "number",
+  1943→                    "description": "how much spoken are the desired tracks"
+  1944→                }
+  1945→            }
+  1946→        },
+  1947→        {
+  1948→            "name" : "Tempo",
+  1949→            "class": plugs.Tempo,
+  1950→            "type" : "filter",
+  1951→            "title" : "$min_tempo to $max_tempo BPM",
+  1952→            "display": "tempo",
+  1953→            "description": "filters tracks by their tempo",
+  1954→
+  1955→            "help" : """ This component will pass through tracks that have a
+  1956→            tempo that is between the given min and max tempos""",
+  1957→
+  1958→            "params": {
+  1959→                "source": {
+  1960→                    "type" : "port",
+  1961→                    "optional" : False,
+  1962→                    "port": "green",
+  1963→                    "max_inputs": 1,
+  1964→                    "description": "the source of the tracks",
+  1965→                },
+  1966→                "min_tempo": {
+  1967→                    "type" : "number",
+  1968→                    "display" : "Min Tempo",
+  1969→                    "optional" : True,
+  1970→                    "description": "the minimum tempo. If omitted, there is no minimum"
+  1971→                },
+  1972→                "max_tempo": {
+  1973→                    "type" : "number",
+  1974→                    "display" : "Max Tempo",
+  1975→                    "optional" : True,
+  1976→                    "description": "the maximum tempo. If omitted, there is no maxiumum"
+  1977→                }
+  1978→            }
+  1979→        },
+  1980→        {
+  1981→            "name" : "Mixer",
+  1982→            "display": "mixer",
+  1983→            "class": mixer.Mixer,
+  1984→            "type" : "combiner",
+  1985→            "description": "Mixes input tracks while maintaining a set of rules.",
+  1986→            "help" : """ This component will mix tracks from the various input
+  1987→            streams, while maintaining a set of rules that govern how the tracks
+  1988→            will be ordered.
+  1989→            <br>
+  1990→            Input streams are on the <b> green </b> port, banned tracks
+  1991→            are on the <b> red</b> port and banned artists are on 
+  1992→            the <b> orange </b> port.  If <b> fail fast </b> is set, then the
+  1993→            order of the input tracks is guaranteed to be preserved and the
+  1994→            mixer will stop producing tracks when it is no longer able to
+  1995→            guarantee the contraints.  If <b> fail fast </b> is not set, then
+  1996→            the mixer will find the next best track on the next input stream
+  1997→            that best fits the current constraints and will continue to produce
+  1998→            tracks as long as any stream is producing tracks.
+  1999→            """,
+  2000→
+  2001→            "title" : "mixer",
+  2002→            "params": {
+  2003→                "source_list": {
+  2004→                    "type" : "port",
+  2005→                    "port": "green",
+  2006→                    "max_inputs": "20",
+  2007→                    "description": "the list of sources"
+  2008→                },
+  2009→                "bad_track_source_list": {
+  2010→                    "type" : "port",
+  2011→                    "port":  "red",
+  2012→                    "max_inputs": "20",
+  2013→                    "display" : "bad tracks",
+  2014→                    "description": "tracks that should be removed from the output"
+  2015→                },
+  2016→                "bad_artist_source_list": {
+  2017→                    "type" : "port",
+  2018→                    "port":  "orange",
+  2019→                    "max_inputs": "20",
+  2020→                    "display" : "bad artists",
+  2021→                    "description": "artists from this source are removed from the output"
+  2022→                },
+  2023→                "fail_fast": {
+  2024→                    "type" : "bool",
+  2025→                    "optional" : True,
+  2026→                    "default" : True,
+  2027→                    "display" : "fail fast",
+  2028→                    "description": "if true stop producing tracks "
+  2029→                        + "as soon as any input stops producing tracks"
+  2030→                },
+  2031→                "dedup": {
+  2032→                    "type" : "bool",
+  2033→                    "optional" : True,
+  2034→                    "default" : True,
+  2035→                    "display" : "de-dup",
+  2036→                    "description": "if true don't allow duplicate tracks in the output"
+  2037→                },
+  2038→                "min_artist_separation": {
+  2039→                    "type" : "number",
+  2040→                    "optional" : True,
+  2041→                    "default" : 4,
+  2042→                    "display" : "minimum artist separation",
+  2043→                    "description": "minimum number of tracks between tracks by the same artist"
+  2044→                },
+  2045→                "max_tracks": {
+  2046→                    "type" : "number",
+  2047→                    "optional" : True,
+  2048→                    "default" : 50,
+  2049→                    "display" : "maximum tracks",
+  2050→                    "description": "the maximum number of tracks to produce"
+  2051→                },
+  2052→            }
+  2053→        },
+  2054→    ]
+  2055→}
+  2056→
+  2057→
+  2058→def export_inventory():
+  2059→    inventory['types']['genre'] = get_genres()
+  2060→    inv = copy.deepcopy(inventory)
+  2061→
+  2062→    enabled_components = []
+  2063→    for component in inv['components']:
+  2064→        if 'disabled' in component and component['disabled']:
+  2065→            continue
+  2066→        del component['class']
+  2067→        enabled_components.append(component)
+  2068→    inv['components'] = enabled_components
+  2069→    return inv
+  2070→
+  2071→def get_genres():
+  2072→    if genres_enabled:
+  2073→        response = en.get('genre/list', results=2000)
+  2074→        gstyle = []
+  2075→        for g in response['genres']:
+  2076→            gn = g['name']
+  2077→            gstyle.append( { 'name': gn, 'value': gn} )
+  2078→        return gstyle
+  2079→    else:
+  2080→        return []
+  2081→
+  2082→def check_components():
+  2083→    for comp in inventory["components"]:
+  2084→        check_component(comp)
+  2085→
+  2086→def is_valid_param_type(type):
+  2087→    valid_types = set(['number', 'string', 'port', 'bool', 
+  2088→    'uri', 'uri_list', 'string_list', 'time', 'any', 'optional_date', 
+  2089→    'optional_rel_date'])
+  2090→    if type in valid_types:
+  2091→        return True
+  2092→    if type in inventory['types']:
+  2093→        return True
+  2094→
+  2095→    print("invalid type", type)
+  2096→    return False
+  2097→
+  2098→def check_component(comp):
+  2099→    print("checking", comp["name"])
+  2100→    '''
+  2101→        {
+  2102→            "name" : "Annotator",
+  2103→            "display": "annotate",
+  2104→            "class": pbl.Annotator,
+  2105→            "type" : "filter",
+  2106→            "description": "Annotates tracks with external information",
+  2107→            "help" : """This component will add information to the tracks on the
+  2108→            input stream. This can make downstream operations like range filters
+  2109→            run much faster.  Supported annotation types are <i>echonest</i>,
+  2110→            <i>audio</i> and <i>spotify</i>""",
+  2111→            "title" : "annotate with $type data",
+  2112→            "params": {
+  2113→                "source": {
+  2114→                    "type" : "port",
+  2115→                    "optional" : False,
+  2116→                    "port": "green",
+  2117→                    "max_inputs": 1,
+  2118→                    "description": "the source of the tracks",
+  2119→                },
+  2120→                "type": {
+  2121→                    "type" : "annotations",
+  2122→                    "optional" : False,
+  2123→                    "default" : "audio",
+  2124→                    "description": "the type of annotation",
+  2125→                },
+  2126→            }
+  2127→        },
+  2128→    '''
+  2129→    valid_ports = set(['green', 'red', 'orange', 'blue'])
+  2130→    assert "name" in comp
+  2131→    assert "class" in comp
+  2132→    assert "type" in comp
+  2133→    assert "description" in comp
+  2134→    if "params" in comp:
+  2135→        for name, param in comp["params"].items():
+  2136→            assert "description" in param
+  2137→            assert "type" in param
+  2138→            ptype = param['type']
+  2139→            assert ptype != "source" # archaic
+  2140→            assert ptype != "source_list" # archaic
+  2141→            if ptype == "port":
+  2142→                assert "port" in param
+  2143→                assert param['port'] in valid_ports
+  2144→            if ptype != "port":
+  2145→                assert "optional" in param
+  2146→                # assert "default" in param
+  2147→            assert is_valid_param_type(ptype)
+  2148→
+  2149→    
+  2150→
+  2151→exported_inventory = export_inventory()
+  2152→check_components()
+  2153→
+  2154→if __name__ == '__main__':
+  2155→    import json
+  2156→    #get_genres()
+  2157→    if False:
+  2158→        print(json.dumps(exported_inventory, indent=4))
+  2159→        print("")
+  2160→
+  2161→

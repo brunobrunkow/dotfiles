@@ -1,0 +1,17 @@
+{
+  "model": "opus",
+  "skipDangerousModePermissionPrompt": true,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/brunobrunkow/Documents/AIBrain/.claude/hooks/auto-commit.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

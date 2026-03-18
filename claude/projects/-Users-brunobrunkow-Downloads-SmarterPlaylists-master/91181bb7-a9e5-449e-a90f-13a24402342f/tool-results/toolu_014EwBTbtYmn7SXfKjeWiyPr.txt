@@ -1,0 +1,1529 @@
+     1→import pbl
+     2→import datetime
+     3→import random
+     4→import spotipy
+     5→from cachetools import TTLCache
+     6→from pbl import spotify_plugs
+     7→import simplejson as json
+     8→import time
+     9→import reltime
+    10→import re
+    11→
+    12→cache = TTLCache(maxsize=1024, ttl=300)
+    13→
+    14→class YesNo(pbl.Conditional):
+    15→    def __init__(self, yes, true_source, false_source):
+    16→
+    17→        def func():
+    18→            return yes
+    19→
+    20→        super(YesNo, self).__init__(func, true_source, false_source)
+    21→
+    22→
+    23→class IsWeekend(pbl.Conditional):
+    24→    def __init__(self, true_source, false_source):
+    25→
+    26→        def bool_func():
+    27→            return datetime.datetime.today().weekday() >= 5
+    28→
+    29→        super(IsWeekend, self).__init__(bool_func, true_source, false_source)
+    30→
+    31→class IsDayOfWeek(pbl.Conditional):
+    32→    def __init__(self, day, true_source, false_source):
+    33→
+    34→        def bool_func():
+    35→            return datetime.datetime.today().weekday() == day
+    36→
+    37→        super(IsDayOfWeek, self).__init__(bool_func, true_source, false_source)
+    38→
+    39→class IsTimeOfDay(pbl.Conditional):
+    40→    def __init__(self, startTime, endTime, true_source, false_source):
+    41→
+    42→        def bool_func():
+    43→            return datetime.datetime.today().weekday() == day
+    44→
+    45→        super(IsDayOfWeek, self).__init__(bool_func, true_source, false_source)
+    46→
+    47→class IsTimeOfDay(pbl.Conditional):
+    48→    def __init__(self, startTime, endTime, true_source, false_source):
+    49→
+    50→        def bool_func():
+    51→            return datetime.datetime.today().weekday() == day
+    52→
+    53→        super(IsDayOfWeek, self).__init__(bool_func, true_source, false_source)
+    54→
+    55→class RandomSelector(object):
+    56→    '''
+    57→        Randomly selects a track from one of the given inputs
+    58→        :param source_list: a list of sources
+    59→    '''
+    60→    def __init__(self, source_list, fail_fast):
+    61→        self.name = 'randomly selecting from ' + ', '.join([s.name for s in source_list])
+    62→        self.source_list = source_list
+    63→        self.fail_fast = fail_fast
+    64→
+    65→    def next_track(self):
+    66→        while (len(self.source_list) > 0):
+    67→            src = random.choice(self.source_list)
+    68→            track = src.next_track()
+    69→            if track:
+    70→                return track
+    71→            elif not self.fail_fast:
+    72→                self.source_list.remove(src)
+    73→            else:
+    74→                break
+    75→        return None;
+    76→
+    77→class RandomStreamSelector(object):
+    78→    '''
+    79→        Randomly selects a stream from a set of inputs
+    80→        :param source_list: a list of sources
+    81→    '''
+    82→    def __init__(self, source_list):
+    83→        self.source_list = source_list
+    84→        self.src = random.choice(self.source_list)
+    85→        self.name = 'randomly picked ' + self.src.name
+    86→
+    87→    def next_track(self):
+    88→        return self.src.next_track()
+    89→
+    90→class Comment(object):
+    91→    '''
+    92→        Randomly selects a stream from a set of inputs
+    93→        :param source_list: a list of sources
+    94→    '''
+    95→    def __init__(self, text, fontsize=12, color='#000000'):
+    96→        self.text = text
+    97→        self.name = text
+    98→        self.fontsize = fontsize
+    99→        self.color = color
+   100→
+   101→    def next_track(self):
+   102→        raise pbl.PBLException(self, "a comment is not runnable")
+   103→
+   104→class TrackFilter(object):
+   105→    '''
+   106→        produces tracks on the true source that are not on the false source
+   107→    '''
+   108→    def __init__(self, true_source, false_source, invert=False, by_name=False):
+   109→        prep = ' that are also in ' if invert else ' that are not in '
+   110→        self.name = 'tracks in ' + true_source.name  + prep + \
+   111→            false_source.name
+   112→        self.true_source = true_source
+   113→        self.false_source = false_source
+   114→        self.bad_tracks = set()
+   115→        self.invert = invert
+   116→        self.debug = False
+   117→        self.by_name = by_name
+   118→
+   119→    def next_track(self):
+   120→        while True:
+   121→            bad_track = self.false_source.next_track()
+   122→            self.bad_tracks.add(bad_track)
+   123→            if bad_track:
+   124→                if self.by_name:
+   125→                    bad_track_name = pbl.tlib.get_tn(bad_track).lower()
+   126→                    self.bad_tracks.add(bad_track_name)
+   127→            else:
+   128→                break
+   129→
+   130→        while True:
+   131→            track = self.true_source.next_track()
+   132→            if track:
+   133→                if self.by_name:
+   134→                    track_name = pbl.tlib.get_tn(track).lower()
+   135→                else:
+   136→                    track_name = track
+   137→
+   138→                if self.invert and ((track in self.bad_tracks) or (track_name in self.bad_tracks)):
+   139→                    return track
+   140→                elif (not self.invert) and ((track not in self.bad_tracks) and (track_name not in self.bad_tracks)):
+   141→                    return track
+   142→                else:
+   143→                    if self.debug:
+   144→                        print('filtered out', pbl.tlib.get_tn(track))
+   145→            else:
+   146→                break
+   147→        return None
+   148→
+   149→class ArtistFilter(object):
+   150→    '''
+   151→        produces tracks on the true source that are not by artists the false source
+   152→    '''
+   153→    def __init__(self, true_source, false_source, invert=False):
+   154→        prep = ' that are by ' if invert else ' that are not by '
+   155→        self.name = 'tracks in ' + true_source.name  + prep + \
+   156→            'artists in ' + false_source.name
+   157→        self.true_source = true_source
+   158→        self.false_source = false_source
+   159→        self.bad_artists = set()
+   160→        self.invert = invert
+   161→        self.debug = False
+   162→
+   163→    def next_track(self):
+   164→        while True:
+   165→            bad_track = self.false_source.next_track()
+   166→            if bad_track:
+   167→                tinfo = pbl.tlib.get_track(bad_track)
+   168→                self.bad_artists.add(tinfo['artist'])
+   169→            else:
+   170→                break
+   171→
+   172→        while True:
+   173→            track = self.true_source.next_track()
+   174→            if track:
+   175→                tinfo = pbl.tlib.get_track(track)
+   176→                if self.invert and (tinfo['artist'] in self.bad_artists):
+   177→                    return track
+   178→                elif (not self.invert) and (tinfo['artist'] not in self.bad_artists):
+   179→                    return track
+   180→                else:
+   181→                    if self.debug:
+   182→                        print('filtered out', pbl.tlib.get_tn(track))
+   183→            else:
+   184→                break
+   185→        return None
+   186→
+   187→class TextFilter(object):
+   188→    '''
+   189→        produces tracks from the stream based on track title match
+   190→    '''
+   191→    def __init__(self, source, text, ignore_case=False, invert=False):
+   192→        prep = ' that do not match ' if invert else ' that match '
+   193→        self.name = 'tracks in ' + source.name  + prep + '"' + text + '"'
+   194→        self.source = source
+   195→        self.invert = invert
+   196→        flags = re.UNICODE
+   197→        if ignore_case:
+   198→            flags |= re.IGNORECASE
+   199→        self.regex = re.compile(text, flags)
+   200→
+   201→    def next_track(self):
+   202→        while True:
+   203→            track = self.source.next_track()
+   204→            if track:
+   205→                tinfo = pbl.tlib.get_track(track)
+   206→                title = tinfo['title']
+   207→                does_match = self.regex.search(title) != None
+   208→                if does_match == self.invert:
+   209→                    continue
+   210→                else:
+   211→                    return track
+   212→            else:
+   213→                break
+   214→        return None
+   215→
+   216→
+   217→MOST = 0
+   218→MORE = 1
+   219→LESS = 2
+   220→LEAST = 3
+   221→ALL = 4
+   222→
+   223→class Danceable(pbl.AttributeRangeFilter):
+   224→    ranges = [
+   225→        (.8, 1),
+   226→        (.6, 1),
+   227→        (.0, .4),
+   228→        (.0, .2),
+   229→        (.0, 1),
+   230→    ]
+   231→
+   232→    def __init__(self, source, scale):
+   233→        min_val = self.ranges[scale] [0]
+   234→        max_val = self.ranges[scale] [1]
+   235→        super(Danceable, self).__init__(source, "audio.danceability",
+   236→            match=None, min_val=min_val, max_val=max_val)
+   237→
+   238→class ReleaseDateFilter(pbl.AttributeRangeFilter):
+   239→    def __init__(self, source, min_val, max_val):
+   240→        super(ReleaseDateFilter, self).__init__(source, "spotify.album_release_date",
+   241→            match=None, min_val=min_val, max_val=max_val)
+   242→
+   243→class Energy(pbl.AttributeRangeFilter):
+   244→    ranges = [
+   245→        (.8, 1),
+   246→        (.6, 1),
+   247→        (.0, .4),
+   248→        (.0, .2),
+   249→        (.0, 1),
+   250→    ]
+   251→
+   252→    def __init__(self, source, scale):
+   253→        min_val = self.ranges[scale] [0]
+   254→        max_val = self.ranges[scale] [1]
+   255→        super(Energy, self).__init__(source, "audio.energy",
+   256→            match=None, min_val=min_val, max_val=max_val)
+   257→
+   258→class Explicit(pbl.AttributeRangeFilter):
+   259→    def __init__(self, source, explicit):
+   260→        super(Explicit, self).__init__(source, "spotify.explicit", match=explicit)
+   261→
+   262→class Live(pbl.AttributeRangeFilter):
+   263→    ranges = [
+   264→        (.8, 1),
+   265→        (.6, 1),
+   266→        (.0, .4),
+   267→        (.0, .2),
+   268→        (.0, 1),
+   269→    ]
+   270→
+   271→    def __init__(self, source, scale):
+   272→        min_val = self.ranges[scale] [0]
+   273→        max_val = self.ranges[scale] [1]
+   274→        super(Live, self).__init__(source, "audio.liveness",
+   275→            match=None, min_val=min_val, max_val=max_val)
+   276→
+   277→class SpokenWord(pbl.AttributeRangeFilter):
+   278→    ranges = [
+   279→        (.8, 1),
+   280→        (.6, 1),
+   281→        (.0, .4),
+   282→        (.0, .2),
+   283→        (.0, 1),
+   284→    ]
+   285→
+   286→    def __init__(self, source, scale):
+   287→        min_val = self.ranges[scale] [0]
+   288→        max_val = self.ranges[scale] [1]
+   289→        super(SpokenWord, self).__init__(source, "audio.speechiness",
+   290→            match=None, min_val=min_val, max_val=max_val)
+   291→
+   292→class Tempo(pbl.AttributeRangeFilter):
+   293→
+   294→    def __init__(self, source, min_tempo, max_tempo):
+   295→        min_val = min_tempo
+   296→        max_val = max_tempo
+   297→        super(Tempo, self).__init__(source, "audio.tempo",
+   298→            match=None, min_val=min_val, max_val=max_val)
+   299→
+   300→class AllButTheFirst(object):
+   301→    '''
+   302→        Returns all but the first tracks from a stream
+   303→
+   304→        :param source: the source of tracks
+   305→        :param sample_size: the number of tracks to skip
+   306→    '''
+   307→    def __init__(self, source, sample_size=10):
+   308→        self.name = 'all but the first ' + str(sample_size) + ' of ' + source.name
+   309→        self.source = source
+   310→        self.sample_size = sample_size
+   311→        self.buffer = []
+   312→        self.filling = True
+   313→
+   314→    def next_track(self):
+   315→        while self.filling:
+   316→            track = self.source.next_track()
+   317→            if track:
+   318→                self.buffer.append(track)
+   319→            else:
+   320→                self.filling = False
+   321→                self.buffer = self.buffer[self.sample_size:]
+   322→
+   323→        if len(self.buffer) > 0:
+   324→            return self.buffer.pop(0)
+   325→        else:
+   326→            return None
+   327→
+   328→class AllButTheLast(object):
+   329→    '''
+   330→        Returns all but the last tracks from a stream
+   331→
+   332→        :param source: the source of tracks
+   333→        :param sample_size: the number of tracks to skip
+   334→    '''
+   335→    def __init__(self, source, sample_size=10):
+   336→        self.name = 'all but the last ' + str(sample_size) + ' of ' + source.name
+   337→        self.source = source
+   338→        self.sample_size = sample_size
+   339→        self.buffer = []
+   340→        self.filling = True
+   341→
+   342→    def next_track(self):
+   343→        while self.filling:
+   344→            track = self.source.next_track()
+   345→            if track:
+   346→                self.buffer.append(track)
+   347→            else:
+   348→                self.filling = False
+   349→                self.buffer = self.buffer[:-self.sample_size:]
+   350→
+   351→        if len(self.buffer) > 0:
+   352→            return self.buffer.pop(0)
+   353→        else:
+   354→            return None
+   355→
+   356→
+   357→def is_authenticated():
+   358→    auth_token = pbl.engine.getEnv('spotify_auth_token')
+   359→    return auth_token != None
+   360→
+   361→def get_user():
+   362→    user = pbl.engine.getEnv('spotify_user_id')
+   363→    return user
+   364→
+   365→def get_spotify():
+   366→    return pbl.spotify_plugs._get_spotify()
+   367→
+   368→
+   369→def get_artist_uri(artist_name):
+   370→    sp = get_spotify()
+   371→    if sp:
+   372→        results = sp.search(artist_name, limit=5, type='artist')
+   373→        if 'artists' in results and 'items' in results['artists'] and len(results['artists']['items']) > 0:
+   374→            return results['artists']['items'][0]['uri']
+   375→    else:
+   376→        return None
+   377→
+   378→class PlaylistSave(object):
+   379→    ''' A PBL Sink that saves the source stream of tracks to the given playlist
+   380→        :param source: the source of tracks to be saved
+   381→        :param playlist_name: the name of the playlist
+   382→        :param playlist_uri: the uri of the playlist
+   383→        :param append: if true, append to the playlist
+   384→    '''
+   385→    def __init__(self, source, playlist_name= None, playlist_uri=None, append=False):
+   386→        self.source = source
+   387→        self.name = source.name + ' saved to ' + playlist_name
+   388→        self.playlist_name = playlist_name
+   389→        self.playlist_uri = playlist_uri
+   390→        self.append = append
+   391→        self.buffer = []
+   392→        self.saved = False
+   393→        self.max_size = 1000
+   394→
+   395→    def next_track(self):
+   396→        if not is_authenticated():
+   397→            raise pbl.PBLException(self, "not authenticated for save")
+   398→
+   399→        track = self.source.next_track()
+   400→        if track and len(self.buffer) < self.max_size:
+   401→            self.buffer.append(track)
+   402→        elif not self.saved:
+   403→            self._save_playlist()
+   404→        return track
+   405→
+   406→    def _save_playlist(self):
+   407→        self.saved = True
+   408→        sp = get_spotify()
+   409→        user = get_user()
+   410→
+   411→        if not sp:
+   412→            raise pbl.PBLException(self, "not authenticated for save")
+   413→
+   414→        if not user:
+   415→            raise pbl.PBLException(self, "no user")
+   416→
+   417→        # TODO - this can be slow if the user has lots of playlists
+   418→        # should cache?
+   419→        if self.playlist_uri:
+   420→            uri = self.playlist_uri
+   421→            pid = get_pid_from_playlist_uri(uri)
+   422→
+   423→            if not user:
+   424→                raise pbl.PBLException(self, "bad uri")
+   425→
+   426→            if not pid:
+   427→                raise pbl.PBLException(self, "bad uri")
+   428→        else:
+   429→            uri = find_playlist_by_name(sp, user, self.playlist_name)
+   430→
+   431→        if uri:
+   432→            print('found',  uri)
+   433→        else:
+   434→            print('creating new', self.playlist_name, 'playlist')
+   435→            response = sp.user_playlist_create(user, self.playlist_name)
+   436→            uri = response['uri']
+   437→
+   438→        pid = get_pid_from_playlist_uri(uri)
+   439→        if pid:
+   440→            batch_size = 100
+   441→            uris = [ 'spotify:track:' + id for id in self.buffer]
+   442→            for start in range(0, len(uris), batch_size):
+   443→                turis = uris[start:start+batch_size]
+   444→                if start == 0 and not self.append:
+   445→                    sp.playlist_replace_items(pid, turis)
+   446→                else:
+   447→                    sp.playlist_add_items(pid, turis)
+   448→        else:
+   449→            print("Can't get authenticated access to spotify")
+   450→
+   451→
+   452→class PlaylistSaveToNew(object):
+   453→    ''' A PBL Sink that saves the source stream of tracks to a new playlist
+   454→
+   455→        :param source: the source of tracks to be saved
+   456→        :param playlist_name: the name of the playlist
+   457→        :param suffix_type - time(default), date, day-of-week, day-of-month
+   458→    '''
+   459→    formatters = {
+   460→        "none": lambda: "",
+   461→        "time": lambda: " - " + now().strftime("%x %X"),
+   462→        "date": lambda: " - " + now().strftime("%x"),
+   463→        "day-of-week": lambda: " - " + get_day_of_week(),
+   464→        "day-of-month": lambda: " - " + now().strftime("%d"),
+   465→    }
+   466→
+   467→    def __init__(self, source, playlist_name, suffix_type = "none"):
+   468→        self.source = source
+   469→        self.name = source.name + ' saved to ' + playlist_name 
+   470→        self.buffer = []
+   471→        self.saved = False
+   472→        self.max_size = 1000
+   473→
+   474→        if suffix_type == None:
+   475→            suffix_type = 'none'
+   476→
+   477→        if suffix_type not in self.formatters:
+   478→            raise pbl.PBLException(self, "bad suffix type" + suffix_type)
+   479→
+   480→        suffix = self.formatters[suffix_type]()
+   481→        self.playlist_name = playlist_name + suffix
+   482→        # print 'st', suffix_type, 's', suffix, 'pn', playlist_name, 'spn', self.playlist_name
+   483→
+   484→
+   485→
+   486→    def next_track(self):
+   487→        if not is_authenticated():
+   488→            raise pbl.PBLException(self, "not authenticated for save")
+   489→
+   490→        track = self.source.next_track()
+   491→        if track and len(self.buffer) < self.max_size:
+   492→            self.buffer.append(track)
+   493→        elif not self.saved:
+   494→            self._save_playlist()
+   495→        return track
+   496→
+   497→
+   498→    def _save_playlist(self):
+   499→        self.saved = True
+   500→        sp = get_spotify()
+   501→        user = get_user()
+   502→
+   503→        if not sp:
+   504→            raise pbl.PBLException(self, "not authenticated for save")
+   505→
+   506→        if not user:
+   507→            raise pbl.PBLException(self, "no user")
+   508→
+   509→        # print 'creating', self.playlist_name
+   510→        response = sp.user_playlist_create(user, self.playlist_name)
+   511→        uri = response['uri']
+   512→
+   513→        pid = get_pid_from_playlist_uri(uri)
+   514→        if pid:
+   515→            batch_size = 100
+   516→            uris = [ 'spotify:track:' + id for id in self.buffer]
+   517→            for start in range(0, len(uris), batch_size):
+   518→                turis = uris[start:start+batch_size]
+   519→                sp.playlist_add_items(pid, turis)
+   520→        else:
+   521→            print("Can't get authenticated access to spotify")
+   522→
+   523→
+   524→def get_pid_from_playlist_uri(uri):
+   525→ # spotify:user:plamere:playlist:5pjUedV8eoCJUiYzyo79eq
+   526→ # or spotify:playlist:5pjUedV8eoCJUiYzyo79eq
+   527→    split_uri = uri.split(':')
+   528→    if len(split_uri) == 5:
+   529→        return split_uri[4]
+   530→    elif len(split_uri) == 3:
+   531→        return split_uri[2]
+   532→    else:
+   533→        return None
+   534→
+   535→def get_user_from_playlist_uri(uri):
+   536→    # username no longer in playlist uri
+   537→    return None
+   538→
+   539→def find_playlist_by_name(sp, user, name):
+   540→    key = user + ':::' + name
+   541→    uri = cache.get(key)
+   542→    if not uri:
+   543→        uri = spotify_plugs._find_playlist_by_name(sp, user, name)
+   544→        if uri:
+   545→            cache.set(key, uri)
+   546→    return uri
+   547→
+   548→def save_to_playlist(title, uri, tids):
+   549→    sp = get_spotify()
+   550→    user = get_user()
+   551→
+   552→    if not sp:
+   553→        raise Exception("not authenticated for save")
+   554→
+   555→    if not user:
+   556→        raise Exception("no authenticated user")
+   557→
+   558→    if not uri:
+   559→        response = sp.user_playlist_create(user, title)
+   560→        print("create playlist", json.dumps(response, indent=4))
+   561→        if 'uri' in response:
+   562→            uri = response['uri']
+   563→        else:
+   564→            raise Exception("Can't create playlist " + title)
+   565→
+   566→    pid = get_pid_from_playlist_uri(uri)
+   567→    if pid:
+   568→        batch_size = 100
+   569→        uris = [ 'spotify:track:' + id for id in tids]
+   570→        for start in range(0, len(uris), batch_size):
+   571→            turis = uris[start:start+batch_size]
+   572→            if start == 0:
+   573→                sp.playlist_replace_items(pid, turis)
+   574→            else:
+   575→                sp.playlist_add_items(pid, turis)
+   576→    else:
+   577→        print("Can't get authenticated access to spotify")
+   578→    return uri
+   579→
+   580→class MySavedTracks(object):
+   581→    ''' A PBL Source that generates a list of the saved tracks
+   582→        by the current suer
+   583→    '''
+   584→
+   585→    def __init__(self):
+   586→        self.name = 'My Saved Tracks'
+   587→        self.buffer = None
+   588→
+   589→    def next_track(self):
+   590→        if self.buffer == None:
+   591→            self.buffer = []
+   592→            try:
+   593→                sp = get_spotify()
+   594→                limit = 50
+   595→                offset = 0
+   596→                total = 50
+   597→
+   598→                while offset < total:
+   599→                    results = sp.current_user_saved_tracks(limit = limit, offset = offset)
+   600→                    for item in results['items']:
+   601→                        track = item['track']
+   602→                        if track and 'id' in track:
+   603→                            self.buffer.append(track['id'])
+   604→                            spotify_plugs._add_track(self.name, track)
+   605→                        else:
+   606→                            raise pbl.engine.PBLException(self, 'bad track')
+   607→                    offset += limit
+   608→                    total = results['total']
+   609→                # print self.name, len(self.buffer), offset, total
+   610→            except spotipy.SpotifyException as e:
+   611→                raise pbl.engine.PBLException(self, e.msg)
+   612→
+   613→        if len(self.buffer) > 0:
+   614→            tid =  self.buffer.pop(0)
+   615→            # print 'ret', self.name, tid
+   616→            return tid
+   617→        else:
+   618→            # print 'ret', self.name, 'empty'
+   619→            return None
+   620→
+   621→class MyFollowedArtists(object):
+   622→    ''' A PBL Source that generates top tracks from followed artist
+   623→        by the current user
+   624→    '''
+   625→
+   626→    def __init__(self, num_tracks):
+   627→        self.name = 'MyFollowedArtists'
+   628→        self.num_tracks = num_tracks
+   629→        self.buffer = None
+   630→
+   631→    def next_track(self):
+   632→        if self.buffer == None:
+   633→            self.buffer = []
+   634→            try:
+   635→                sp = get_spotify()
+   636→                limit = 50
+   637→                after = None
+   638→                while True:
+   639→                    try:
+   640→                        results = get_spotify().current_user_followed_artists(limit = limit, after = after)
+   641→                    except spotipy.SpotifyException as e:
+   642→                        raise pbl.engine.PBLException(self, e.msg)
+   643→
+   644→                    artists = results['artists']
+   645→                    items = artists['items']
+   646→
+   647→                    for item in items:
+   648→                        artist_id = item['id']
+   649→                        after = artist_id
+   650→                        try:
+   651→                            results = get_spotify()._get('artists/' + artist_id + '/top-tracks')
+   652→                        except spotipy.SpotifyException as e:
+   653→                            raise pbl.engine.PBLException(self, e.msg)
+   654→
+   655→                        for track in results['tracks'][:self.num_tracks]:
+   656→                            self.buffer.append(track['id'])
+   657→                            spotify_plugs._add_track(self.name, track)
+   658→                    if len(items) < limit:
+   659→                        break
+   660→
+   661→            except spotipy.SpotifyException as e:
+   662→                raise pbl.engine.PBLException(self, e.msg)
+   663→
+   664→        if len(self.buffer) > 0:
+   665→            return self.buffer.pop(0)
+   666→        else:
+   667→            return None
+   668→
+   669→class MySavedAlbums(object):
+   670→    ''' A PBL Source that the tracks from albums saved
+   671→        by the current user
+   672→    '''
+   673→
+   674→    def __init__(self):
+   675→        self.name = 'My Saved Albums'
+   676→        self.buffer = None
+   677→
+   678→    def next_track(self):
+   679→        if self.buffer == None:
+   680→            self.buffer = []
+   681→            sp = get_spotify()
+   682→            limit = 50
+   683→            total = limit
+   684→            offset = 0
+   685→
+   686→            while offset < total:
+   687→                try:
+   688→                    results = get_spotify().current_user_saved_albums(limit = limit, offset = offset)
+   689→                    # print 'cusa', self.name, limit, offset, results['limit'], results['offset'], results['total']
+   690→                except spotipy.SpotifyException as e:
+   691→                    # print 'woah'
+   692→                    raise pbl.engine.PBLException(self, e.msg)
+   693→
+   694→                items = results['items']
+   695→                #print json.dumps(results, indent=4)
+   696→                #break
+   697→
+   698→                for item in items:
+   699→                    album = item['album']
+   700→                    for track in album['tracks']['items']:
+   701→                        self.buffer.append(track['id'])
+   702→                        spotify_plugs._add_track(self.name, track)
+   703→                offset += limit
+   704→                total = results['total']
+   705→                # print 'interim', self.name, len(self.buffer), offset, total
+   706→                if results['next'] == None:
+   707→                    break
+   708→            # print 'final', self.name, len(self.buffer), offset, total
+   709→
+   710→        if len(self.buffer) > 0:
+   711→            tid =  self.buffer.pop(0)
+   712→            # print 'ret', self.name, tid
+   713→            return tid
+   714→        else:
+   715→            # print 'ret', self.name, 'empty'
+   716→            return None
+   717→
+   718→class DatedPlaylistSource(object):
+   719→    '''
+   720→        A PBL source that generates a stream of tracks from the given Spotify
+   721→        playlist with tracks potentially ordered and filtered by the date they
+   722→        were added to the playlist. If only a name is provided, the playlist 
+   723→        will be searched for.  Search success can be improved if the owner of 
+   724→        the playlist is also provided.
+   725→
+   726→        :param name: the name of the playlist
+   727→        :param uri: the uri of the playlist
+   728→        :param user: the owner of the playlist
+   729→        :param order_by_date_added: if true, tracks are ordered by the date they
+   730→            were added to the playlist
+   731→        :param tracks_added_since: if not None, only tracks added after this
+   732→        date are returned
+   733→        :param tracks_added_before: if not None, only tracks added before this
+   734→        date are returned
+   735→
+   736→    '''
+   737→
+   738→    def __init__(self, name, uri=None, user=None, 
+   739→        order_by_date_added=False, 
+   740→        tracks_added_since=None,
+   741→        tracks_added_before=None):
+   742→
+   743→        self.name = name
+   744→        self.uri = spotify_plugs.normalize_uri(uri)
+   745→        self.user = user
+   746→        self.order_by_date_added = order_by_date_added
+   747→        self.tracks_added_before = tracks_added_before
+   748→        self.tracks_added_since = tracks_added_since
+   749→
+   750→        self.next_offset = 0
+   751→        self.limit = 100
+   752→
+   753→        self.tracks = []
+   754→        self.total = 1
+   755→        self.cur_index = 0
+   756→        self.track_count = 0
+   757→
+   758→
+   759→    def _get_uri_from_name(self, name):
+   760→        results = get_spotify().search(q=name, type='playlist')
+   761→        if len(results['playlists']['items']) > 0:
+   762→            return results['playlists']['items'][0]['uri']
+   763→        else:
+   764→            return None
+   765→
+   766→    def _get_uri_from_name_and_user(self, name, user):
+   767→        results = get_spotify().current_user_playlists()
+   768→        while results:
+   769→            for playlist in results['items']:
+   770→                if playlist['name'].lower() == name.lower():
+   771→                    return playlist['uri']
+   772→            if results['next']:
+   773→                results = get_spotify().next(results)
+   774→            else:
+   775→                results = None
+   776→        return None
+   777→
+   778→    def _get_more_tracks(self):
+   779→        playlist_id = get_pid_from_playlist_uri(self.uri)
+   780→        print('[plugs] playlist_tracks class=%s uri=%s id=%s offset=%d' % (self.__class__.__name__, self.uri, playlist_id, self.next_offset))
+   781→        try:
+   782→            results = get_spotify().playlist_tracks(playlist_id,
+   783→                limit=self.limit, offset=self.next_offset, market='from_token')
+   784→        except spotipy.SpotifyException as e:
+   785→            print('[plugs] SpotifyException http_status=%s reason=%s msg=%s' % (e.http_status, getattr(e, 'reason', '?'), e.msg))
+   786→            raise engine.PBLException(self, e.msg)
+   787→
+   788→        self.total = results['total']
+   789→        for item in results['items']:
+   790→            self.track_count += 1
+   791→            good_track = True
+   792→            ts = parse_date(item['added_at'])
+   793→            if self.tracks_added_before >= 0 and ts >= 0 and ts > self.tracks_added_before:
+   794→                good_track = False
+   795→            if self.tracks_added_since >=0 and ts >=0 and ts  < self.tracks_added_since:
+   796→                good_track = False
+   797→            track = item['track']
+   798→            if good_track and ts >= 0 and track and 'id' in track:
+   799→                self.tracks.append( (track['id'], ts) )
+   800→                spotify_plugs._add_track(self.name, track)
+   801→        self.next_offset += self.limit
+   802→
+   803→    def _get_all_tracks(self):
+   804→        while self.track_count < self.total:
+   805→            self._get_more_tracks()
+   806→
+   807→    def order_tracks_by_date_added(self):
+   808→        self.tracks.sort(key=lambda t:t[1])
+   809→        
+   810→    def next_track(self):
+   811→        if self.uri == None:
+   812→            if self.user:
+   813→                self.uri = self._get_uri_from_name_and_user(self.name, self.user)
+   814→            else:
+   815→                self.uri = self._get_uri_from_name(self.name)
+   816→
+   817→            if not self.uri:
+   818→                msg = "Can't find playlist named " + self.name
+   819→                if self.user:
+   820→                    msg += ' for user ' + self.user
+   821→                raise engine.PBLException(self, msg)
+   822→
+   823→        if self.uri and self.cur_index >= len(self.tracks)  and self.track_count < self.total:
+   824→            self._get_all_tracks()
+   825→            if self.order_by_date_added:
+   826→                self.order_tracks_by_date_added()
+   827→
+   828→        if self.cur_index < len(self.tracks):
+   829→            track, date = self.tracks[self.cur_index]
+   830→            self.cur_index += 1
+   831→            return track
+   832→        else:
+   833→            return None
+   834→
+   835→class RelativeDatedPlaylistSource(object):
+   836→    '''
+   837→        A PBL source that generates a stream of tracks from the given Spotify
+   838→        playlist with tracks potentially ordered and filtered by the relative
+   839→        date they were added to the playlist. If only a name is provided, the playlist 
+   840→        will be searched for.  Search success can be improved if the owner of 
+   841→        the playlist is also provided.
+   842→
+   843→        :param name: the name of the playlist
+   844→        :param uri: the uri of the playlist
+   845→        :param user: the owner of the playlist
+   846→        :param order_by_date_added: if true, tracks are ordered by the date they were added to the playlist
+   847→        :param tracks_added_since: if not None or empty, only tracks added after this
+   848→        relative time are generated
+   849→        :param tracks_added_before: if not None or empty, only tracks added before this
+   850→        relative time are generated
+   851→
+   852→    '''
+   853→
+   854→    def __init__(self, name, uri=None, user=None, order_by_date_added=False, 
+   855→        tracks_added_since=None, tracks_added_before=None):
+   856→
+   857→        self.name = name
+   858→        self.uri = spotify_plugs.normalize_uri(uri)
+   859→        self.user = user
+   860→        self.order_by_date_added = order_by_date_added
+   861→
+   862→        if tracks_added_before != None and len(tracks_added_before) > 0:
+   863→            try:
+   864→                delta = reltime.parse_to_rel_time(tracks_added_before) 
+   865→                self.tracks_added_before = date_to_epoch(now()) - delta
+   866→            except ValueError as e:
+   867→                raise pbl.PBLException('bad relative time format', str(e))
+   868→        else:
+   869→            self.tracks_added_before = -1
+   870→
+   871→        if tracks_added_since != None and len(tracks_added_since) > 0:
+   872→            try:
+   873→                delta = reltime.parse_to_rel_time(tracks_added_since) 
+   874→                self.tracks_added_since = date_to_epoch(now()) - delta
+   875→            except ValueError as e:
+   876→                raise pbl.PBLException(self, 'bad relative time format ' + str(e))
+   877→        else:
+   878→            self.tracks_added_since = -1
+   879→
+   880→        #print "since", tracks_added_since, self.tracks_added_since, date_to_epoch(now())
+   881→        #print "before", tracks_added_before, self.tracks_added_before, date_to_epoch(now())
+   882→
+   883→        self.next_offset = 0
+   884→        self.limit = 100
+   885→
+   886→        self.tracks = []
+   887→        self.total = 1
+   888→        self.cur_index = 0
+   889→        self.track_count = 0
+   890→
+   891→
+   892→    def _get_uri_from_name(self, name):
+   893→        results = get_spotify().search(q=name, type='playlist')
+   894→        if len(results['playlists']['items']) > 0:
+   895→            return results['playlists']['items'][0]['uri']
+   896→        else:
+   897→            return None
+   898→
+   899→    def _get_uri_from_name_and_user(self, name, user):
+   900→        results = get_spotify().current_user_playlists()
+   901→        while results:
+   902→            for playlist in results['items']:
+   903→                if 'name' in playlist and playlist['name'] and playlist['name'].lower() == name.lower():
+   904→                    return playlist['uri']
+   905→            if results['next']:
+   906→                results = get_spotify().next(results)
+   907→            else:
+   908→                results = None
+   909→        return None
+   910→
+   911→
+   912→    def _get_more_tracks(self):
+   913→        playlist_id = get_pid_from_playlist_uri(self.uri)
+   914→        print('[plugs] playlist_tracks class=%s uri=%s id=%s offset=%d' % (self.__class__.__name__, self.uri, playlist_id, self.next_offset))
+   915→        try:
+   916→            results = get_spotify().playlist_tracks(playlist_id,
+   917→                limit=self.limit, offset=self.next_offset, market='from_token')
+   918→        except spotipy.SpotifyException as e:
+   919→            print('[plugs] SpotifyException http_status=%s reason=%s msg=%s' % (e.http_status, getattr(e, 'reason', '?'), e.msg))
+   920→            raise engine.PBLException(self, e.msg)
+   921→
+   922→        self.total = results['total']
+   923→        for item in results['items']:
+   924→            self.track_count += 1
+   925→            good_track = True
+   926→            ts = parse_date(item['added_at'])
+   927→            if self.tracks_added_before >= 0 and ts >= 0 and ts > self.tracks_added_before:
+   928→                good_track = False
+   929→            if self.tracks_added_since >= 0 and ts >=0 and ts  < self.tracks_added_since:
+   930→                good_track = False
+   931→            track = item['track']
+   932→            # print good_track, ts, self.tracks_added_before, self.tracks_added_since, track['name']
+   933→            if good_track and ts >= 0 and track and 'id' in track:
+   934→                self.tracks.append( (track['id'], ts) )
+   935→                spotify_plugs._add_track(self.name, track)
+   936→        self.next_offset += self.limit
+   937→
+   938→    def _get_all_tracks(self):
+   939→        while self.track_count < self.total:
+   940→            self._get_more_tracks()
+   941→
+   942→    def order_tracks_by_date_added(self):
+   943→        self.tracks.sort(key=lambda t:t[1])
+   944→        
+   945→    def next_track(self):
+   946→        if self.uri == None:
+   947→            if self.user:
+   948→                self.uri = self._get_uri_from_name_and_user(self.name, self.user)
+   949→            else:
+   950→                self.uri = self._get_uri_from_name(self.name)
+   951→
+   952→            if not self.uri:
+   953→                msg = "Can't find playlist named " + self.name
+   954→                if self.user:
+   955→                    msg += ' for user ' + self.user
+   956→                raise engine.PBLException(self, msg)
+   957→
+   958→        # print 'next_track', self.cur_index, self.track_count, self.total
+   959→        if self.uri and self.cur_index >= len(self.tracks)  and self.track_count < self.total:
+   960→            self._get_all_tracks()
+   961→            if self.order_by_date_added:
+   962→                self.order_tracks_by_date_added()
+   963→
+   964→        if self.cur_index < len(self.tracks):
+   965→            track, date = self.tracks[self.cur_index]
+   966→            self.cur_index += 1
+   967→            return track
+   968→        else:
+   969→            return None
+   970→
+   971→class MixIn(object):
+   972→    '''
+   973→        A PBL Filter that mixes two input streams based upon a small
+   974→        set of rules
+   975→    '''
+   976→
+   977→    def __init__(self, true_source, false_source,
+   978→        ntracks=1, nskips=1, initial_skip = 1, fail_fast = True):
+   979→        '''
+   980→            params:
+   981→                * true_source
+   982→                * false_source
+   983→        '''
+   984→        self.name = 'mixing ' + true_source.name  + ' with ' + \
+   985→            false_source.name
+   986→        self.true_source = true_source
+   987→        self.false_source = false_source
+   988→        self.initial_offset = initial_skip
+   989→        self.ntracks = ntracks # false tracks in a row
+   990→        self.nskips = nskips   # true tracks in a row
+   991→        self.fail_fast = fail_fast
+   992→        self.which = 0
+   993→
+   994→    def next_track(self):
+   995→
+   996→        if self.which < self.initial_offset:
+   997→            true_count = self.initial_offset
+   998→        else:
+   999→            true_count = self.nskips
+  1000→
+  1001→        false_count = self.ntracks
+  1002→        total_tracks_in_cycle = true_count + false_count
+  1003→        which_in_cycle = self.which % total_tracks_in_cycle
+  1004→        use_first = which_in_cycle < true_count
+  1005→
+  1006→        if use_first:
+  1007→            next_source = self.true_source
+  1008→            other_source = self.false_source
+  1009→        else:
+  1010→            next_source = self.false_source
+  1011→            other_source = self.true_source
+  1012→
+  1013→        track = next_source.next_track()
+  1014→        if not track:
+  1015→            if not self.fail_fast:
+  1016→                track = other_source.next_track()
+  1017→        self.which += 1
+  1018→        return track
+  1019→
+  1020→class SeparateArtists(object):
+  1021→    ''' A PBL filter that reorders the input tracks to maximize
+  1022→        the separation between artists
+  1023→    '''
+  1024→
+  1025→    def __init__(self, source):
+  1026→        self.name = 'SeparateArtists'
+  1027→        self.source = source
+  1028→        self.tracks = []
+  1029→        self.filling = True
+  1030→
+  1031→    def score_list(self):
+  1032→        min_delta_allowed = 2
+  1033→        score = 0
+  1034→        indexes = set()
+  1035→
+  1036→        for i in range(len(self.tracks) - 1):
+  1037→            aname = self.tracks[i]['artist']
+  1038→            for j in range(i + 1, len(self.tracks)):
+  1039→
+  1040→                if j - i >= min_delta_allowed:
+  1041→                    break
+  1042→
+  1043→                bname = self.tracks[j]['artist']
+  1044→                if aname == bname:
+  1045→                    delta = j - i
+  1046→                    indexes.add(i)
+  1047→                    indexes.add(j)
+  1048→                    score += min_delta_allowed - delta
+  1049→
+  1050→        lindex = list(indexes)
+  1051→        lindex.sort()
+  1052→        return score, lindex
+  1053→
+  1054→    def random_index(self):
+  1055→        return random.randint(0, len(self.tracks) - 1)
+  1056→
+  1057→    def swap(self, a, b):
+  1058→        tmp = self.tracks[a]
+  1059→        self.tracks[a] = self.tracks[b]
+  1060→        self.tracks[b] = tmp
+  1061→
+  1062→    def separate_artists(self):
+  1063→        max_tries = 1000
+  1064→        cur_score = 0
+  1065→        max_no_swaps = 100
+  1066→
+  1067→        cur_score, indexes = self.score_list()
+  1068→        no_swap = 0
+  1069→
+  1070→        for i in range(max_tries):
+  1071→
+  1072→            if cur_score == 0 or len(indexes) == 0:
+  1073→                break
+  1074→
+  1075→            swap_1 = random.choice(indexes)
+  1076→            swap_2 = self.random_index()
+  1077→            self.swap(swap_1, swap_2)
+  1078→            new_score, new_indexes = self.score_list()
+  1079→
+  1080→            if new_score >= cur_score:
+  1081→                self.swap(swap_2, swap_1)
+  1082→                no_swap += 1
+  1083→                if no_swap > max_no_swaps:
+  1084→                    break
+  1085→            else:
+  1086→                no_swap = 0
+  1087→                cur_score = new_score
+  1088→                indexes = new_indexes
+  1089→
+  1090→            if cur_score == 0:
+  1091→                break
+  1092→
+  1093→        return cur_score, len(indexes)
+  1094→
+  1095→    def create_buffer(self):
+  1096→        self.buffer = []
+  1097→        for ti in self.tracks:
+  1098→            self.buffer.append(ti['id'])
+  1099→
+  1100→    def next_track(self):
+  1101→        while self.filling:
+  1102→            track = self.source.next_track()
+  1103→            if track:
+  1104→                tinfo = pbl.tlib.get_track(track)
+  1105→                self.tracks.append(tinfo)
+  1106→            else:
+  1107→                self.filling = False
+  1108→                self.separate_artists()
+  1109→                self.create_buffer()
+  1110→
+  1111→        if len(self.buffer) > 0:
+  1112→            return self.buffer.pop()
+  1113→        else:
+  1114→            return None
+  1115→
+  1116→
+  1117→def get_day_of_week():
+  1118→    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'monday']
+  1119→    day = now().weekday()
+  1120→    return days[day]
+  1121→
+  1122→class ArtistDeDup(object):
+  1123→    '''
+  1124→        Remove any duplicate artists in the stream
+  1125→        :param source: the stream source
+  1126→
+  1127→    '''
+  1128→
+  1129→    def __init__(self, source):
+  1130→        self.name = 'artist dedupped ' + source.name
+  1131→        self.source = source
+  1132→        self.history = set()
+  1133→
+  1134→    def next_track(self):
+  1135→        track = None
+  1136→        while True:
+  1137→            track = self.source.next_track()
+  1138→            if track:
+  1139→                tinfo = pbl.tlib.get_track(track)
+  1140→                artist_name = '(none)'
+  1141→                if 'artist' in tinfo:
+  1142→                    artist_name = tinfo['artist']
+  1143→
+  1144→                if artist_name in self.history:
+  1145→                    continue
+  1146→                else:
+  1147→                    self.history.add(artist_name)
+  1148→                    break
+  1149→            else:
+  1150→                break
+  1151→        return track
+  1152→
+  1153→class ArtistSeparation(object):
+  1154→    '''
+  1155→        enforces a minimum separation of artists
+  1156→    '''
+  1157→
+  1158→    def __init__(self, source, min_separation=4, reorder=True):
+  1159→        self.name = 'artist separated ' + source.name
+  1160→        self.source = source
+  1161→        self.history = []
+  1162→        self.lookaside = []
+  1163→        
+  1164→        self.min_separation = min_separation
+  1165→        self.reorder = reorder
+  1166→
+  1167→    def _separation(self, artist):
+  1168→        for i, partist in enumerate(reversed(self.history)):
+  1169→            if artist == partist:
+  1170→                return i
+  1171→        return -1
+  1172→
+  1173→    def _get_artist_name(self, track):
+  1174→        tinfo = pbl.tlib.get_track(track)
+  1175→        artist_name = '(none)'
+  1176→        if 'artist' in tinfo:
+  1177→            artist_name = tinfo['artist']
+  1178→        return artist_name
+  1179→
+  1180→    def _check_from_lookaside(self):
+  1181→        for track in self.lookaside:
+  1182→            artist_name = self._get_artist_name(track)
+  1183→            sep = self._separation(artist_name)
+  1184→            if sep >= self.min_separation or sep == -1:
+  1185→                self.lookaside.remove(track)
+  1186→                return track
+  1187→        return None
+  1188→
+  1189→        
+  1190→    def _next_track(self):
+  1191→        track = self._check_from_lookaside()
+  1192→        if track == None:
+  1193→            track = self.source.next_track()
+  1194→        return track
+  1195→
+  1196→    def next_track(self):
+  1197→        track = None
+  1198→        while True:
+  1199→            track = self._next_track()
+  1200→            if track:
+  1201→                artist_name = self._get_artist_name(track)
+  1202→                sep = self._separation(artist_name)
+  1203→                if sep >= self.min_separation or sep == -1:
+  1204→                    self.history.append(artist_name)
+  1205→                    break
+  1206→                else:
+  1207→                    if self.reorder:
+  1208→                        self.lookaside.append(track)
+  1209→                    continue
+  1210→            else:
+  1211→                break
+  1212→        return track
+  1213→
+  1214→class WeightedShuffler(object):
+  1215→    ''' A weighted shuffles the tracks in the stream
+  1216→
+  1217→        :param source: the source of tracks
+  1218→        :param factor: 1 pure random, 0, pure ordered
+  1219→    '''
+  1220→    def __init__(self, source, factor):
+  1221→        self.name = 'shuffled ' + source.name
+  1222→        self.source = source
+  1223→        self.buffer = []
+  1224→        self.factor = factor
+  1225→
+  1226→        self.filling = True
+  1227→
+  1228→    def shuffle(self):
+  1229→        out = []
+  1230→        for i, t in enumerate(self.buffer):
+  1231→            r = random.random() * len(self.buffer)
+  1232→            w = (len(self.buffer) - i)
+  1233→            weight = r * self.factor + w * (1.0 - self.factor)
+  1234→            out.append( (weight, t) )
+  1235→            # print i,r,w,weight
+  1236→        out.sort()
+  1237→        self.buffer = [ t for w,t in out]
+  1238→
+  1239→    def next_track(self):
+  1240→        while self.filling:    
+  1241→            track = self.source.next_track()
+  1242→            if track:
+  1243→                self.buffer.append(track)
+  1244→            else:
+  1245→                self.filling = False
+  1246→                self.shuffle()
+  1247→        if len(self.buffer) > 0:
+  1248→            return self.buffer.pop()
+  1249→        else:
+  1250→            return None
+  1251→
+  1252→class MyTopTracks(object):
+  1253→    ''' returns the your top tracks for a given perioed
+  1254→
+  1255→        :param time_range time_range - Over what time frame are the tracks are
+  1256→                returned  Valid-values: short_term, medium_term, long_term
+  1257→
+  1258→    '''
+  1259→    def __init__(self, time_range):
+  1260→        self.name = 'My Top Tracks'
+  1261→        self.time_range = time_range
+  1262→        self.buffer = None
+  1263→
+  1264→    def next_track(self):
+  1265→        if self.buffer == None:
+  1266→            self.buffer = []
+  1267→            try:
+  1268→                sp = get_spotify()
+  1269→                limit = 50
+  1270→                offset = 0
+  1271→                total = 50
+  1272→
+  1273→                while offset < total:
+  1274→                    results = sp.current_user_top_tracks(time_range = self.time_range,
+  1275→                        limit = limit, offset = offset)
+  1276→                    for item in results['items']:
+  1277→                        track = item
+  1278→                        if track and 'id' in track:
+  1279→                            self.buffer.append(track['id'])
+  1280→                            spotify_plugs._add_track(self.name, track)
+  1281→                        else:
+  1282→                            continue
+  1283→                            #raise pbl.engine.PBLException(self, 'bad track')
+  1284→                    offset += limit
+  1285→                    total = results['total']
+  1286→                # print self.name, len(self.buffer), offset, total
+  1287→            except spotipy.SpotifyException as e:
+  1288→                raise pbl.engine.PBLException(self, e.msg)
+  1289→
+  1290→        if len(self.buffer) > 0:
+  1291→            tid =  self.buffer.pop(0)
+  1292→            # print 'ret', self.name, tid
+  1293→            return tid
+  1294→        else:
+  1295→            # print 'ret', self.name, 'empty'
+  1296→            return None
+  1297→
+  1298→class SpotifyArtistRadio(object):
+  1299→    ''' returns artist radio tracks given a seed artist
+  1300→
+  1301→        :param seed_artist_name_or_uri the name or uri of the seed artist
+  1302→
+  1303→    '''
+  1304→    def __init__(self, name=None, uri=None):
+  1305→        self.name = 'Artist Radio'
+  1306→        self.artist_name = name
+  1307→        self.artist_uri = uri
+  1308→        self.buffer = None
+  1309→
+  1310→    def next_track(self):
+  1311→        if self.buffer == None:
+  1312→            self.buffer = []
+  1313→            try:
+  1314→                sp = get_spotify()
+  1315→
+  1316→                if self.artist_uri:
+  1317→                    seed_uri = self.artist_uri
+  1318→                elif self.artist_name:
+  1319→                    seed_uri = spotify_plugs._find_artist_by_name(sp, self.artist_name)
+  1320→                else:
+  1321→                    seed_uri = None
+  1322→
+  1323→                if seed_uri:
+  1324→                    results = sp.recommendations(seed_artists=[seed_uri], limit=100)
+  1325→                    for track in results['tracks']:
+  1326→                        if track and 'id' in track:
+  1327→                            self.buffer.append(track['id'])
+  1328→                            spotify_plugs._add_track(self.name, track)
+  1329→                        else:
+  1330→                            raise pbl.engine.PBLException(self, 'bad track')
+  1331→            except spotipy.SpotifyException as e:
+  1332→                raise pbl.engine.PBLException(self, e.msg)
+  1333→
+  1334→        if len(self.buffer) > 0:
+  1335→            tid =  self.buffer.pop(0)
+  1336→            return tid
+  1337→        else:
+  1338→            return None
+  1339→
+  1340→class SpotifyArtistTracks(object):
+  1341→    ''' returns top tracks given a seed artist
+  1342→
+  1343→        :param seed_artist_name_or_uri the name or uri of the seed artist
+  1344→
+  1345→    '''
+  1346→    def __init__(self, seed_artist_name_or_uri):
+  1347→        self.name = 'Artist Top Tracks'
+  1348→        self.seed_artist_name_or_uri = seed_artist_name_or_uri
+  1349→        self.buffer = None
+  1350→
+  1351→    # TODO: this just returns the top 10 tracks, need to add more 
+  1352→
+  1353→    def next_track(self):
+  1354→        if self.buffer == None:
+  1355→            self.buffer = []
+  1356→            try:
+  1357→                sp = get_spotify()
+  1358→
+  1359→                if is_uri(self.seed_artist_name_or_uri):
+  1360→                    seed_uri = self.seed_artist_name_or_uri
+  1361→                else:
+  1362→                    seed_uri = get_artist_uri(self.seed_artist_name_or_uri)
+  1363→
+  1364→                if seed_uri:
+  1365→                    results = sp._get('artists/' + seed_uri + '/top-tracks')
+  1366→                    for track in results['tracks']:
+  1367→                        if track and 'id' in track:
+  1368→                            self.buffer.append(track['id'])
+  1369→                            spotify_plugs._add_track(self.name, track)
+  1370→                        else:
+  1371→                            raise pbl.engine.PBLException(self, 'bad track')
+  1372→            except spotipy.SpotifyException as e:
+  1373→                raise pbl.engine.PBLException(self, e.msg)
+  1374→
+  1375→        if len(self.buffer) > 0:
+  1376→            tid =  self.buffer.pop(0)
+  1377→            return tid
+  1378→        else:
+  1379→            return None
+  1380→
+  1381→
+  1382→def is_uri(s):
+  1383→    fields = s.split(':')
+  1384→    return len(fields) >= 3 and fields[0] == 'spotify'
+  1385→
+  1386→def now():
+  1387→    return datetime.datetime.now()
+  1388→
+  1389→def date_to_epoch(date):
+  1390→    return (date - datetime.datetime(1970,1,1)).total_seconds()
+  1391→
+  1392→def parse_date(sdate):
+  1393→    try:
+  1394→        date = datetime.datetime.strptime(sdate, "%Y-%m-%dT%H:%M:%SZ")
+  1395→        return date_to_epoch(date)
+  1396→    except ValueError:
+  1397→        return -1
+  1398→    except:
+  1399→        return -1
+  1400→
+  1401→
+  1402→if __name__ == '__main__':
+  1403→
+  1404→
+  1405→    import sys
+  1406→    if True:
+  1407→        p1 = pbl.ArtistTopTracks(name='Ravenscry')
+  1408→        #p2 = pbl.ArtistTopTracks(name='weezer')
+  1409→        #mi = MixIn(p1, p2, 2,1,1, True)
+  1410→        #pbl.show_source(mi)
+  1411→        save = PlaylistSaveToNew(p1, 'test', 'day-of-month')
+  1412→        pbl.show_source(save)
+  1413→
+  1414→    if False:
+  1415→        dec1 = date_to_epoch("2015-12-01")
+  1416→        src = DatedPlaylistSource("extender test", None, 'plamere',
+  1417→            order_by_date_added=False, 
+  1418→            tracks_added_since=-1, tracks_added_before=dec1)
+  1419→        pbl.show_source(src)
+  1420→
+  1421→    if False:
+  1422→        print('with dedup')
+  1423→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1424→        src = ArtistDeDup(src)
+  1425→        pbl.show_source(src)
+  1426→
+  1427→        print('no dedup')
+  1428→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1429→        pbl.show_source(src)
+  1430→
+  1431→    if False:
+  1432→        print('weighted source')
+  1433→
+  1434→        print('factor', 1)
+  1435→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1436→        src = WeightedShuffler(src, 1)
+  1437→        pbl.show_source(src)
+  1438→
+  1439→        print('factor', 0)
+  1440→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1441→        src = WeightedShuffler(src, 0)
+  1442→        pbl.show_source(src)
+  1443→
+  1444→        print('factor', .5)
+  1445→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1446→        src = WeightedShuffler(src, .5)
+  1447→        pbl.show_source(src)
+  1448→
+  1449→        print('factor', .1)
+  1450→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1451→        src = WeightedShuffler(src, .1)
+  1452→        pbl.show_source(src)
+  1453→
+  1454→        print('factor', .01)
+  1455→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1456→        src = WeightedShuffler(src, .01)
+  1457→        pbl.show_source(src)
+  1458→
+  1459→    if False:
+  1460→        sixmonths = 60 * 60 * 24 * 30 * 6
+  1461→        onemonth = 60 * 60 * 24 * 30 * 1
+  1462→
+  1463→        print("older than six months")
+  1464→        src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
+  1465→            order_by_date_added=False, 
+  1466→            tracks_added_since=None, tracks_added_before="6 months")
+  1467→        pbl.show_source(src)
+  1468→
+  1469→        print("new than six months")
+  1470→        src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
+  1471→            order_by_date_added=False, 
+  1472→            tracks_added_since="six mnths", tracks_added_before="")
+  1473→        pbl.show_source(src)
+  1474→
+  1475→        print("new than six months, older than one month")
+  1476→        src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
+  1477→            order_by_date_added=False, 
+  1478→            tracks_added_since="six months", tracks_added_before="1 month")
+  1479→        pbl.show_source(src)
+  1480→
+  1481→    if False:
+  1482→        print('std')
+  1483→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1484→        pbl.show_source(src)
+  1485→
+  1486→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1487→        src = TextFilter(src, 'the', True, False)
+  1488→        print(src.name)
+  1489→        pbl.show_source(src)
+  1490→
+  1491→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1492→        src = TextFilter(src, 'the', False, False)
+  1493→        print(src.name)
+  1494→        pbl.show_source(src)
+  1495→
+  1496→        src = pbl.PlaylistSource("extender test", None, 'plamere')
+  1497→        src = TextFilter(src, 'the', True, True)
+  1498→        print(src.name)
+  1499→        pbl.show_source(src)
+  1500→
+  1501→    if False:
+  1502→        print('std')
+  1503→        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+  1504→        pbl.show_source(src)
+  1505→
+  1506→        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+  1507→        src = TextFilter(src, 'mix', True, False)
+  1508→        pbl.show_source(src)
+  1509→
+  1510→        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+  1511→        src = TextFilter(src, '^M', True, False)
+  1512→        pbl.show_source(src)
+  1513→
+  1514→        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+  1515→        src = TextFilter(src, 'mix|the', True, False)
+  1516→        pbl.show_source(src)
+  1517→
+  1518→        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+  1519→        src = TextFilter(src, '-', True, False)
+  1520→        pbl.show_source(src)
+  1521→     
+  1522→    if True:
+  1523→        src = MyTopTracks(time_range='short_term')
+  1524→        pbl.show_source(src)
+  1525→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

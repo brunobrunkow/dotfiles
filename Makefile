@@ -23,6 +23,7 @@ update:
 	@sh zsh/zsh.sh
 	@sh ghostty/ghostty.sh
 	@sh hammerspoon/hammerspoon.sh
+	@sh claude/claude.sh
 	@echo "✅ Symlinks updated!\n"
 
 backup:
@@ -44,4 +45,7 @@ clean:
 	@rm -f ~/.gitconfig && echo "  ✅ Removed ~/.gitconfig" || true
 	@rm -f ~/.gitignore_global && echo "  ✅ Removed ~/.gitignore_global" || true
 	@rm -rf ~/.hammerspoon && echo "  ✅ Removed ~/.hammerspoon" || true
+	@rm -f ~/.claude/CLAUDE.md && echo "  ✅ Removed ~/.claude/CLAUDE.md" || true
+	@rm -f ~/.claude/settings.json && echo "  ✅ Removed ~/.claude/settings.json" || true
+	@rm -f ~/.claude/projects && echo "  ✅ Removed ~/.claude/projects" || true
 	@echo "✅ All symlinks removed!\n"
