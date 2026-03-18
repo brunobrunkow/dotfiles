@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find ~/Developer/dotfiles -type f \\\\\\( -name \".*rc\" -o -name \".*config*\" -o -name \"aliases\" -o -name \"functions\" -o -name \".*ignore*\" -o -name \".*profile\" -o -name \".*env*\" -o -name \"*PATH*\" \\\\\\) 2>/dev/null | head -30)",
+      "Bash(find ~/Developer/dotfiles -type f \\\\\\( -name \"Brewfile\" -o -name \"*.brewfile\" -o -name \"*brew*\" \\\\\\) 2>/dev/null | head -20)"
+    ]
+  }
+}

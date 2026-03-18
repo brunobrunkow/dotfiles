@@ -1,6 +1,16 @@
 {
   "model": "opus",
   "skipDangerousModePermissionPrompt": true,
+  "permissions": {
+    "allow": [
+      "Read(//~/Documents/AIBrain/**)",
+      "Write(//~/Documents/AIBrain/**)",
+      "Edit(//~/Documents/AIBrain/**)"
+    ],
+    "additionalDirectories": [
+      "~/Documents/AIBrain"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -8,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/brunobrunkow/Documents/AIBrain/.claude/hooks/auto-commit.sh"
+            "command": "~/Documents/AIBrain/.claude/hooks/auto-commit.sh"
           }
         ]
       }
