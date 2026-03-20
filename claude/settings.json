@@ -1,6 +1,4 @@
 {
-  "model": "opus",
-  "skipDangerousModePermissionPrompt": true,
   "permissions": {
     "allow": [
       "Read(//~/Documents/AIBrain/**)",
@@ -23,5 +21,6 @@
         ]
       }
     ]
-  }
+  },
+  "skipDangerousModePermissionPrompt": true
 }

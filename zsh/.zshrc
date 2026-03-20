@@ -24,7 +24,7 @@ source $ZSH/oh-my-zsh.sh
 alias go="$HOME/Developer/dotfiles/bin/gameon"
 
 # Git Cheat Sheet
-gh() {
+githelp() {
   cat << 'EOF'
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                        🚀 GIT ALIASES CHEAT SHEET 🚀                       ║
