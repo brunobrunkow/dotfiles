@@ -141,3 +141,4 @@ gitresetremote() {
   git reset --hard origin/$current_branch && \
     echo "✓ Reset to origin/$current_branch"
 }
+export PATH="$HOME/.local/bin:$PATH"
