@@ -22,11 +22,4 @@ else
     exit 1
 fi
 
-if git config --global core.excludesfile ~/.gitignore_global; then
-    echo "  ✅ Set global gitignore"
-else
-    echo "  ❌ Failed to set global gitignore" >&2
-    exit 1
-fi
-
 echo "🎉 Git configuration complete!"

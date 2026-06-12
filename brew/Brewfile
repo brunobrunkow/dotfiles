@@ -1,6 +1,11 @@
-tap "homebrew/bundle"
 # UNIX shell (command interpreter)
 brew "zsh"
+# GitHub CLI
+brew "gh"
+# Media downloader (used by Hammerspoon ⌘⇧U/⌘⇧V hotkeys)
+brew "yt-dlp"
+# Required by yt-dlp for audio conversion and thumbnail embedding
+brew "ffmpeg"
 # Essentials
 cask "alfred"
 cask "hammerspoon"

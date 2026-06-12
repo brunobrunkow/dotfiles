@@ -40,10 +40,6 @@ print_success "Tap to click enabled at the trackpad"
 defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 print_success "Printer app quit once the prints complete."
 
-# Disable the "Are you sure you want to open this application?" dialog
-defaults write com.apple.LaunchServices LSQuarantine -bool false
-print_success "Are you sure you want to open this app dialog disabled."
-
 echo "Restarting affected services..."
 killall Dock >/dev/null 2>&1 || true
 killall Finder >/dev/null 2>&1 || true

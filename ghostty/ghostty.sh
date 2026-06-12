@@ -9,6 +9,12 @@ echo "👻 Setting up Ghostty configuration..."
 GHOSTTY_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty"
 mkdir -p "$GHOSTTY_CONFIG_DIR"
 
+# Backup existing config if it's a real file (not a symlink)
+if [ -f "$GHOSTTY_CONFIG_DIR/config" ] && [ ! -L "$GHOSTTY_CONFIG_DIR/config" ]; then
+    echo "  ⚠️  Backing up existing Ghostty config"
+    mv "$GHOSTTY_CONFIG_DIR/config" "$GHOSTTY_CONFIG_DIR/config.backup.$(date +%Y%m%d_%H%M%S)"
+fi
+
 # Symlink the config file
 if ln -sf ~/Developer/dotfiles/ghostty/config "$GHOSTTY_CONFIG_DIR/config"; then
     echo "  ✅ Symlinked Ghostty config"

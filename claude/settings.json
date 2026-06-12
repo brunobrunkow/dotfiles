@@ -14,6 +14,5 @@
   },
   "skipDangerousModePermissionPrompt": true,
   "theme": "light",
-  "remoteControlAtStartup": false,
-  "voiceEnabled": true
+  "remoteControlAtStartup": false
 }

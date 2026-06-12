@@ -44,6 +44,8 @@ The following applications are installed via Homebrew:
 
 **CLI Tools:**
 * zsh
+* gh (GitHub CLI)
+* yt-dlp + ffmpeg (used by Hammerspoon download hotkeys)
 
 **Applications:**
 * Alfred
@@ -70,7 +72,7 @@ The following applications are installed via Homebrew:
 ### 6. Setup SSH
 * Creates SSH directory structure
 * Optionally generates SSH keys for Git
-* Symlinks SSH config
+* Writes a default `~/.ssh/config` if none exists (the real config is not versioned — it contains private host entries)
 
 ### 7. Setup Ghostty
 * Creates Ghostty config directory

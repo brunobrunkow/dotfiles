@@ -76,7 +76,7 @@ fi
 
 # SSH
 echo "🔐 [6/9] Setting up SSH..."
-if sh ssh/ssh.sh; then
+if bash ssh/ssh.sh; then
     echo "✅ SSH setup complete\n"
 else
     echo "❌ Failed to setup SSH" >&2

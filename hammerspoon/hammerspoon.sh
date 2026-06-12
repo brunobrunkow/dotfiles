@@ -7,10 +7,12 @@ DOTFILES_DIR="$HOME/Developer/dotfiles"
 
 echo "✨ Setting up Hammerspoon..."
 
-# Remove existing .hammerspoon directory or symlink
-if [ -e ~/.hammerspoon ] || [ -L ~/.hammerspoon ]; then
-    echo "  ⚠️  Removing existing ~/.hammerspoon..."
-    rm -rf ~/.hammerspoon
+# Remove existing symlink, backup a real directory
+if [ -L ~/.hammerspoon ]; then
+    rm ~/.hammerspoon
+elif [ -e ~/.hammerspoon ]; then
+    echo "  ⚠️  Backing up existing ~/.hammerspoon..."
+    mv ~/.hammerspoon ~/.hammerspoon.backup.$(date +%Y%m%d_%H%M%S)
 fi
 
 # Create symlink

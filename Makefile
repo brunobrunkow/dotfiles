@@ -36,7 +36,7 @@ backup:
 
 ssh:
 	@echo "🔐 Setting up SSH..."
-	@sh ssh/ssh.sh
+	@bash ssh/ssh.sh
 
 clean:
 	@echo "🧹 Removing symlinks..."

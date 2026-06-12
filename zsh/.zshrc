@@ -5,15 +5,13 @@ fi
 
 # Path configuration
 # Standard user paths (personal scripts, Homebrew)
-export PATH="$HOME/bin:/usr/local/bin:$HOME/Developer/dotfiles/bin:$PATH"
-
-# PostgreSQL 13 from Homebrew
-export PATH="/opt/homebrew/opt/postgresql@13/bin:$PATH"
+export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$HOME/Developer/dotfiles/bin:$PATH"
 
 # Oh-My-Zsh configuration
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git zsh-autosuggestions fast-syntax-highlighting zsh-autocomplete)
+# fast-syntax-highlighting must be loaded last
+plugins=(git zsh-autosuggestions zsh-autocomplete fast-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -141,4 +139,3 @@ gitresetremote() {
   git reset --hard origin/$current_branch && \
     echo "✓ Reset to origin/$current_branch"
 }
-export PATH="$HOME/.local/bin:$PATH"
