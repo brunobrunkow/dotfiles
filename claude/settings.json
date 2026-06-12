@@ -1,26 +1,19 @@
 {
-  "permissions": {
-    "allow": [
-      "Read(//~/Documents/AIBrain/**)",
-      "Write(//~/Documents/AIBrain/**)",
-      "Edit(//~/Documents/AIBrain/**)"
-    ],
-    "additionalDirectories": [
-      "~/Documents/AIBrain"
-    ]
+  "model": "claude-fable-5[1m]",
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/Documents/AIBrain/.claude/hooks/auto-commit.sh"
-          }
-        ]
-      }
-    ]
+  "language": "Deutsch",
+  "effortLevel": "high",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
   },
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "light",
+  "remoteControlAtStartup": false,
+  "voiceEnabled": true
 }
