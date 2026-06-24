@@ -35,4 +35,12 @@ else
     exit 1
 fi
 
+# Symlink statusline.sh
+if ln -sf "$DOTFILES_CLAUDE_DIR/statusline.sh" "$CLAUDE_DIR/statusline.sh"; then
+    echo "  ✅ Symlinked statusline.sh"
+else
+    echo "  ❌ Failed to symlink statusline.sh" >&2
+    exit 1
+fi
+
 echo "🎉 Claude Code setup complete!"
