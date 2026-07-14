@@ -8,4 +8,3 @@
 ## Arbeitsweise
 
 - Frag nach, bevor du destruktive Aktionen ausführst (z.B. `git reset --hard`, Löschen von Dateien).
-- Committe und pushe nur auf ausdrückliche Aufforderung.
