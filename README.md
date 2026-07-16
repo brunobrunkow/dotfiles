@@ -2,7 +2,7 @@
 
 A set of tools and environment setups I require for work.
 
-This repo should be cloned into `~/Developer/dotfiles` for it to correctly link everything.
+This repo can be cloned to any location — all scripts and symlinks resolve paths relative to the repo itself.
 
 ## Installation
 

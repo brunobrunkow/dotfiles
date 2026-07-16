@@ -3,7 +3,7 @@
 set -e  # Exit on error
 set -u  # Exit on undefined variable
 
-DOTFILES_DIR="$HOME/Developer/dotfiles"
+DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Check if Homebrew already installed
 if command -v brew >/dev/null 2>&1; then

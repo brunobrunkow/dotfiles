@@ -6,7 +6,7 @@ set -u  # Exit on undefined variable
 echo "🤖 Setting up Claude Code configuration..."
 
 CLAUDE_DIR="$HOME/.claude"
-DOTFILES_CLAUDE_DIR="$HOME/Developer/dotfiles/claude"
+DOTFILES_CLAUDE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Create .claude directory if it doesn't exist
 mkdir -p "$CLAUDE_DIR"

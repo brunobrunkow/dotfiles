@@ -3,7 +3,7 @@
 set -e  # Exit on error
 set -u  # Exit on undefined variable
 
-DOTFILES_DIR="$HOME/Developer/dotfiles"
+DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "💻 Setting up Zsh..."
 
@@ -12,7 +12,8 @@ if [ -d ~/.oh-my-zsh ]; then
     echo "  ⚠️  oh-my-zsh already installed, skipping..."
 else
     echo "  📥 Installing oh-my-zsh..."
-    if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"; then
+    # --unattended: without it the installer execs into an interactive zsh and halts this script
+    if sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended; then
         echo "  ✅ oh-my-zsh installed"
     else
         echo "  ❌ Failed to install oh-my-zsh" >&2

@@ -1,22 +1,25 @@
 {
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
   },
   "language": "Deutsch",
   "effortLevel": "high",
+  "tui": "default",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
   "skipDangerousModePermissionPrompt": true,
   "theme": "light",
-  "remoteControlAtStartup": false,
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh"
-  }
+  "editorMode": "normal",
+  "remoteControlAtStartup": false
 }

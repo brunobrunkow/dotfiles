@@ -4,8 +4,15 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # Path configuration
+# Locate the dotfiles repo by resolving this file's symlink (repo can live anywhere)
+DOTFILES_DIR="${${(%):-%N}:A:h:h}"
 # Standard user paths (personal scripts, Homebrew)
-export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$HOME/Developer/dotfiles/bin:$PATH"
+export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$DOTFILES_DIR/bin:$PATH"
+
+# Pre-declare zsh-autocomplete's deferred widgets so fast-syntax-highlighting
+# can wrap them instead of warning; zsh-autocomplete replaces them after init.
+zle -N menu-search
+zle -N recent-paths
 
 # Oh-My-Zsh configuration
 export ZSH="$HOME/.oh-my-zsh"
@@ -19,7 +26,7 @@ source $ZSH/oh-my-zsh.sh
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Custom scripts
-alias go="$HOME/Developer/dotfiles/bin/gameon"
+alias gameon="$DOTFILES_DIR/bin/gameon"
 
 # Git Cheat Sheet
 githelp() {

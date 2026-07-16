@@ -3,7 +3,7 @@
 set -e  # Exit on error
 set -u  # Exit on undefined variable
 
-DOTFILES_DIR="$HOME/Developer/dotfiles"
+DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "✨ Setting up Hammerspoon..."
 
