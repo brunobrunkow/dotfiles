@@ -6,15 +6,27 @@ brew "gh"
 brew "yt-dlp"
 # Required by yt-dlp for audio conversion and thumbnail embedding
 brew "ffmpeg"
-# Essentials
+# Fuzzy finder (used by the bootstrap app selection)
+brew "fzf"
+# Launcher and productivity tool
 cask "alfred"
+# Window management and automation (required for the Hammerspoon setup step)
 cask "hammerspoon"
+# System monitor in the menu bar
 cask "stats"
+# Web browser
 cask "firefox"
+# Terminal emulator (config gets symlinked by ghostty.sh)
 cask "ghostty"
+# HTTP debugging proxy
 cask "proxyman"
+# API client
 cask "rapidapi"
+# Git GUI
 cask "sourcetree"
+# Music streaming
 cask "spotify"
+# Code editor
 cask "visual-studio-code"
+# Xcode version manager
 cask "xcodes-app"

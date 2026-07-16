@@ -40,12 +40,19 @@ Required for development tools and compilers.
 Custom system preferences via `osx/osx.sh`.
 
 ### 3. Install Homebrew & Applications
-The following applications are installed via Homebrew:
+The following applications are installed via Homebrew.
 
-**CLI Tools:**
+During installation, an interactive fzf picker lets you choose which apps
+to install (useful for VMs where you don't need everything). All apps start
+selected — press `Tab` to toggle, `Enter` to confirm, or `Esc` to install
+everything. CLI tools are always installed. Without an interactive terminal,
+everything is installed.
+
+**CLI Tools (always installed):**
 * zsh
 * gh (GitHub CLI)
 * yt-dlp + ffmpeg (used by Hammerspoon download hotkeys)
+* fzf (used by the bootstrap app selection)
 
 **Applications:**
 * Alfred
